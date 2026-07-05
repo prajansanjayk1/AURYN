@@ -28,10 +28,9 @@ class ThemeEngine extends StateNotifier<RestaurantTheme> {
         event: PostgresChangeEvent.update,
         schema: 'public',
         table: 'settings',
-        filter: 'id=eq.global',
         callback: (payload) {
           final newSettings = payload.newRecord;
-          if (newSettings.isNotEmpty) {
+          if (newSettings.isNotEmpty && newSettings['id'] == 'global') {
             state = RestaurantTheme.fromJson(newSettings);
             _repository.cacheTheme(newSettings);
           }

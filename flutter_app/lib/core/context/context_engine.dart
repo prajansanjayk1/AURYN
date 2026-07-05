@@ -128,7 +128,7 @@ class ContextEngine extends StateNotifier<AurynContext> {
 
   void _listenToAuthChanges() {
     _client.auth.onAuthStateChange.listen((data) async {
-      final user = data.user;
+      final user = data.session?.user;
       if (user == null) {
         // Reset staff context
         await _sessionManager.clearStaffSession();

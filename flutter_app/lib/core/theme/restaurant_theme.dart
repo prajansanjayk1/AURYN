@@ -108,7 +108,7 @@ class RestaurantTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: colorScheme.background,
       fontFamily: typography,
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colorScheme.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
