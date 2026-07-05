@@ -74,17 +74,17 @@ jobs:
         run: flutter pub get
         working-directory: flutter_app
 
-      - name: Build iOS (No codesign)
-        run: flutter build ios --release --no-codesign
+      - name: Build iOS Simulator Bundle
+        run: flutter build ios --simulator
         working-directory: flutter_app
 
       - name: Zip iOS Build
         run: |
-          cd flutter_app/build/ios/iphoneos
+          cd flutter_app/build/ios/iphonesimulator
           zip -r Auryn_iOS.zip Runner.app
 
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: auryn-ios-app
-          path: flutter_app/build/ios/iphoneos/Auryn_iOS.zip
+          path: flutter_app/build/ios/iphonesimulator/Auryn_iOS.zip
