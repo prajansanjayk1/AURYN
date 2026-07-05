@@ -31,6 +31,7 @@ dependencies:
   google_fonts: ^6.2.1
   fl_chart: ^0.68.0 # For Manager/Owner Business Analytics
   audioplayers: ^6.0.0 # For notification chimes
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

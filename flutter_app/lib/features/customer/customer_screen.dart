@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/context/context_engine.dart';
 import '../../core/theme/theme_engine.dart';
 import '../../core/experience/experience_base.dart';
@@ -13,6 +14,7 @@ import '../../core/experience/leaving.dart';
 import '../../shared/models/dining_stage.dart';
 import '../../shared/widgets/auryn_top_bar.dart';
 import '../../shared/widgets/auryn_bottom_sheet.dart';
+import '../../shared/widgets/auryn_dialog.dart';
 
 class CustomerScreen extends ConsumerStatefulWidget {
   const CustomerScreen({Key? key}) : super(key: key);
@@ -156,6 +158,50 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
     );
   }
 
+  void _showShareQrDialog(BuildContext context, String tableId, String sessionId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AurynDialog(
+        title: 'Invite Dining Companion',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Let your friends scan this QR code to join your table dining session instantly.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: Colors.white70),
+            ),
+            const SizedBox(height: 20),
+            Container(
+               padding: const EdgeInsets.all(12),
+               decoration: BoxDecoration(
+                 color: Colors.white,
+                 borderRadius: BorderRadius.circular(16),
+               ),
+               child: QrImageView(
+                 data: 'https://auryn.dineflow.ai/table/$tableId?session=$sessionId',
+                 version: QrVersions.auto,
+                 size: 200.0,
+                 gapless: false,
+               ),
+             ),
+            const SizedBox(height: 12),
+            Text(
+              'Table $tableId • Session #${sessionId.length > 4 ? sessionId.substring(sessionId.length - 4) : sessionId}',
+              style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CLOSE'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appCtx = ref.watch(contextEngineProvider);
@@ -169,6 +215,10 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       child: Scaffold(
         appBar: AurynTopBar(
           actions: [
+            IconButton(
+              onPressed: () => _showShareQrDialog(context, appCtx.tableId ?? '', appCtx.sessionId ?? ''),
+              icon: Icon(Icons.qr_code, color: mTheme.colorScheme.secondary),
+            ),
             IconButton(
               onPressed: () => _openAiConciergeSheet(context, mTheme),
               icon: Icon(Icons.support_agent, color: mTheme.colorScheme.secondary),

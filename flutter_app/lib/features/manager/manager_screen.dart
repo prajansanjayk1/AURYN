@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/theme/theme_engine.dart';
 import '../../core/ai/manager_ai.dart';
 import '../../core/ai/ai_engine.dart';
 import '../../shared/widgets/auryn_top_bar.dart';
 import '../../shared/widgets/auryn_card.dart';
 import '../../shared/widgets/auryn_button.dart';
+import '../../shared/widgets/auryn_dialog.dart';
 
 class ManagerScreen extends ConsumerStatefulWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -245,38 +247,86 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
                 statusColor = Colors.amber;
               }
 
-              return AurynCard(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'T-${table['id']}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          status.toString().toUpperCase(),
-                          style: const TextStyle(fontSize: 8, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ],
+              return InkWell(
+                onTap: () => _showTableQrCode(table['id'].toString()),
+                borderRadius: BorderRadius.circular(24),
+                child: AurynCard(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'T-${table['id']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            status.toString().toUpperCase(),
+                            style: const TextStyle(fontSize: 8, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  void _showTableQrCode(String tableId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AurynDialog(
+        title: 'TABLE $tableId QR CODE',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Display or print this QR code. Guests can scan it to sit and initialize their dining session.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: Colors.white70),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: QrImageView(
+                data: 'https://auryn.dineflow.ai/table/$tableId',
+                version: QrVersions.auto,
+                size: 200.0,
+                gapless: false,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Payload: https://auryn.dineflow.ai/table/$tableId',
+              style: const TextStyle(fontSize: 9, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CLOSE'),
+          ),
+        ],
+      ),
     );
   }
 
