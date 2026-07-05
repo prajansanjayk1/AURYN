@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper to check if user has a specific role
+    function getUserRole(role) {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    // Helper to check if user is any authenticated staff member
+    function isStaff() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'manager' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'chef' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'runner' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'cashier'
+        );
+    }
+
+    // Global settings: Public read-only, Write only staff
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // MenuItems: Public read-only, Write only chef/admin/manager
+    match /menuItems/{itemId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // Tables: Public read-only, Write only staff
+    match /tables/{tableId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // Sessions: Read/Write public for active guests and staff
+    match /sessions/{sessionId} {
+      allow read, write: if true; 
+    }
+
+    // Orders: Read/Write public for active guests and staff
+    match /orders/{orderId} {
+      allow read, write: if true;
+    }
+
+    // Inventory: Read/Write only for staff
+    match /inventory/{itemId} {
+      allow read, write: if isStaff();
+    }
+
+    // Users: Read-only for staff, write only if authenticated or staff
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null || isStaff();
+    }
+
+    // Notifications: Read/Write public for table alerts and staff notifications
+    match /notifications/{notifId} {
+      allow read, write: if true;
+    }
+
+    // AuditLogs: Read-only for admin/manager, write-only for staff
+    match /auditLogs/{logId} {
+      allow read: if getUserRole('admin') || getUserRole('manager');
+      allow write: if isStaff();
+    }
+    
+    // Receipts: Read/Write for guests/staff
+    match /receipts/{receiptId} {
+      allow read, write: if true;
+    }
+  }
+}

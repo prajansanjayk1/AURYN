@@ -1,0 +1,72 @@
+name: Build AURYN App
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java Development Kit
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+        working-directory: flutter_app
+
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: flutter_app
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: auryn-android-apk
+          path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
+
+  build-ios:
+    name: Build iOS App Bundle
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+        working-directory: flutter_app
+
+      - name: Build iOS (No codesign)
+        run: flutter build ios --release --no-codesign
+        working-directory: flutter_app
+
+      - name: Zip iOS Build
+        run: |
+          cd flutter_app/build/ios/iphoneos
+          zip -r Auryn_iOS.zip Runner.app
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: auryn-ios-app
+          path: flutter_app/build/ios/iphoneos/Auryn_iOS.zip

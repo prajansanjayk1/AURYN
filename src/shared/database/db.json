@@ -1,0 +1,378 @@
+{
+  "tables": [
+    {
+      "id": "1",
+      "name": "Table 1",
+      "qrCode": "df-table-1-auth",
+      "status": "occupied",
+      "currentSessionId": "session-1783183386764"
+    },
+    {
+      "id": "2",
+      "name": "Table 2",
+      "qrCode": "df-table-2-auth",
+      "status": "available",
+      "currentSessionId": null
+    },
+    {
+      "id": "3",
+      "name": "Table 3",
+      "qrCode": "df-table-3-auth",
+      "status": "occupied",
+      "currentSessionId": "session-1783182871738"
+    },
+    {
+      "id": "4",
+      "name": "Table 4",
+      "qrCode": "df-table-4-auth",
+      "status": "available",
+      "currentSessionId": null
+    },
+    {
+      "id": "5",
+      "name": "Table 5",
+      "qrCode": "df-table-5-auth",
+      "status": "available",
+      "currentSessionId": null
+    },
+    {
+      "id": "6",
+      "name": "Table 6",
+      "qrCode": "df-table-6-auth",
+      "status": "available",
+      "currentSessionId": null
+    },
+    {
+      "id": "7",
+      "name": "Table 7",
+      "qrCode": "df-table-7-auth",
+      "status": "available",
+      "currentSessionId": null
+    },
+    {
+      "id": "8",
+      "name": "Table 8",
+      "qrCode": "df-table-8-auth",
+      "status": "available",
+      "currentSessionId": null
+    }
+  ],
+  "sessions": [
+    {
+      "id": "session-1783182871738",
+      "tableId": "3",
+      "ownerId": "guest-1783181837289",
+      "guests": [
+        {
+          "id": "guest-1783181837289",
+          "name": "Prajan"
+        }
+      ],
+      "status": "active",
+      "createdAt": "2026-07-04T16:34:31.738Z",
+      "closedAt": null,
+      "orders": [],
+      "timeline": [
+        {
+          "timestamp": "2026-07-04T16:34:31.739Z",
+          "type": "session.created",
+          "description": "Dining Session created by Prajan."
+        }
+      ]
+    },
+    {
+      "id": "session-1783183386764",
+      "tableId": "1",
+      "ownerId": "guest-1783183385756",
+      "guests": [
+        {
+          "id": "guest-1783183385756",
+          "name": "Prajan"
+        }
+      ],
+      "status": "active",
+      "createdAt": "2026-07-04T16:43:06.764Z",
+      "closedAt": null,
+      "orders": [],
+      "timeline": [
+        {
+          "timestamp": "2026-07-04T16:43:06.764Z",
+          "type": "session.created",
+          "description": "Dining Session created by Prajan."
+        }
+      ]
+    }
+  ],
+  "orders": [],
+  "menu": [
+    {
+      "id": "m1",
+      "name": "Truffle Burrata Pizza",
+      "description": "Stone-baked sourdough, creamy Puglian burrata, fresh black truffle shavings, aged balsamic drizzle.",
+      "price": 680,
+      "category": "Mains",
+      "rating": 4.9,
+      "isChefRecommendation": true,
+      "isPopular": true,
+      "isTrending": true,
+      "prepTime": 12,
+      "calories": 620,
+      "protein": "18g",
+      "allergens": [
+        "Gluten",
+        "Dairy"
+      ],
+      "ingredients": [
+        "Sourdough",
+        "Burrata",
+        "Black Truffle",
+        "Aged Balsamic",
+        "Wild Mushroom"
+      ],
+      "image": "/images/burrata.jpg"
+    },
+    {
+      "id": "m2",
+      "name": "Charcoal Wagyu Sliders",
+      "description": "A5 Wagyu beef patties, melted Gruyère, caramelized shallot jam, black brioche buns.",
+      "price": 850,
+      "category": "Starters",
+      "rating": 4.8,
+      "isChefRecommendation": false,
+      "isPopular": true,
+      "isTrending": false,
+      "prepTime": 10,
+      "calories": 540,
+      "protein": "28g",
+      "allergens": [
+        "Gluten",
+        "Dairy"
+      ],
+      "ingredients": [
+        "Wagyu Beef",
+        "Gruyère Cheese",
+        "Shallot Jam",
+        "Charcoal Brioche"
+      ],
+      "image": "/images/sliders.jpg"
+    },
+    {
+      "id": "m3",
+      "name": "Saffron Lobster Bisque",
+      "description": "Slow-simmered Maine lobster broth, Kashmiri saffron, cognac cream, butter-poached claw.",
+      "price": 720,
+      "category": "Starters",
+      "rating": 4.7,
+      "isChefRecommendation": true,
+      "isPopular": false,
+      "isTrending": true,
+      "prepTime": 15,
+      "calories": 380,
+      "protein": "22g",
+      "allergens": [
+        "Dairy",
+        "Shellfish"
+      ],
+      "ingredients": [
+        "Maine Lobster",
+        "Kashmiri Saffron",
+        "Cognac",
+        "Heavy Cream"
+      ],
+      "image": "/images/bisque.jpg"
+    },
+    {
+      "id": "m4",
+      "name": "Edamame Truffle Gyoza",
+      "description": "Pan-seared dumplings stuffed with sweet edamame mash, white truffle oil, soy-ginger glaze.",
+      "price": 490,
+      "category": "Starters",
+      "rating": 4.6,
+      "isChefRecommendation": false,
+      "isPopular": false,
+      "isTrending": false,
+      "prepTime": 8,
+      "calories": 280,
+      "protein": "10g",
+      "allergens": [
+        "Soy",
+        "Gluten"
+      ],
+      "ingredients": [
+        "Edamame",
+        "White Truffle Oil",
+        "Gyoza Wrapper",
+        "Soy Sauce",
+        "Ginger"
+      ],
+      "image": "/images/gyoza.jpg"
+    },
+    {
+      "id": "m5",
+      "name": "Smoked Rose Pistachio Kulfi",
+      "description": "Traditional slow-churned Indian ice cream infused with organic rose water and crushed Iranian pistachios.",
+      "price": 320,
+      "category": "Desserts",
+      "rating": 4.9,
+      "isChefRecommendation": true,
+      "isPopular": true,
+      "isTrending": true,
+      "prepTime": 6,
+      "calories": 310,
+      "protein": "8g",
+      "allergens": [
+        "Dairy",
+        "Nuts"
+      ],
+      "ingredients": [
+        "Milk Solids",
+        "Rose Water",
+        "Pistachios",
+        "Cardamom"
+      ],
+      "image": "/images/kulfi.jpg"
+    },
+    {
+      "id": "m6",
+      "name": "Himalayan Peach Iced Nectar",
+      "description": "Cold-pressed wild organic peaches, hand-picked Himalayan thyme, sparkling spring water.",
+      "price": 240,
+      "category": "Beverages",
+      "rating": 4.5,
+      "isChefRecommendation": false,
+      "isPopular": false,
+      "isTrending": false,
+      "prepTime": 4,
+      "calories": 120,
+      "protein": "1g",
+      "allergens": [],
+      "ingredients": [
+        "Organic Peaches",
+        "Himalayan Thyme",
+        "Sparkling Spring Water"
+      ],
+      "image": "/images/peach.jpg"
+    }
+  ],
+  "inventory": [
+    {
+      "id": "i1",
+      "name": "Burrata Cheese",
+      "stock": 15,
+      "unit": "units",
+      "minStock": 5,
+      "expiryDate": "2026-07-10"
+    },
+    {
+      "id": "i2",
+      "name": "Black Truffle",
+      "stock": 0.8,
+      "unit": "kg",
+      "minStock": 0.2,
+      "expiryDate": "2026-07-20"
+    },
+    {
+      "id": "i3",
+      "name": "A5 Wagyu Beef",
+      "stock": 12,
+      "unit": "kg",
+      "minStock": 3,
+      "expiryDate": "2026-07-08"
+    },
+    {
+      "id": "i4",
+      "name": "Maine Lobster",
+      "stock": 8,
+      "unit": "units",
+      "minStock": 2,
+      "expiryDate": "2026-07-07"
+    },
+    {
+      "id": "i5",
+      "name": "Kashmiri Saffron",
+      "stock": 0.15,
+      "unit": "kg",
+      "minStock": 0.05,
+      "expiryDate": "2026-12-31"
+    },
+    {
+      "id": "i6",
+      "name": "Edamame",
+      "stock": 25,
+      "unit": "kg",
+      "minStock": 5,
+      "expiryDate": "2026-08-15"
+    },
+    {
+      "id": "i7",
+      "name": "Iranian Pistachios",
+      "stock": 4,
+      "unit": "kg",
+      "minStock": 1,
+      "expiryDate": "2026-09-30"
+    },
+    {
+      "id": "i8",
+      "name": "Organic Peaches",
+      "stock": 30,
+      "unit": "kg",
+      "minStock": 8,
+      "expiryDate": "2026-07-09"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "n-welcome",
+      "timestamp": "2026-07-04T16:34:31.684Z",
+      "title": "Operations Active",
+      "message": "DineFlow AI Realtime Event Engine initialized successfully.",
+      "type": "success",
+      "read": false
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log-1783183386767-432",
+      "timestamp": "2026-07-04T16:43:06.767Z",
+      "action": "session.created",
+      "userId": "guest-1783183385756",
+      "details": "Session session-1783183386764 created at Table 1 by Prajan"
+    },
+    {
+      "id": "log-1783182871742-924",
+      "timestamp": "2026-07-04T16:34:31.742Z",
+      "action": "session.created",
+      "userId": "guest-1783181837289",
+      "details": "Session session-1783182871738 created at Table 3 by Prajan"
+    },
+    {
+      "id": "log-start",
+      "timestamp": "2026-07-04T16:34:31.684Z",
+      "action": "system.start",
+      "details": "DineFlow AI database seeded with premium menu items, staff, and tables."
+    }
+  ],
+  "users": [
+    {
+      "id": "u-admin",
+      "email": "admin@dineflow.ai",
+      "name": "Executive Director",
+      "passwordHash": "admin123",
+      "role": "admin"
+    },
+    {
+      "id": "u-chef",
+      "email": "chef@dineflow.ai",
+      "name": "Chef de Cuisine",
+      "passwordHash": "chef123",
+      "role": "chef"
+    },
+    {
+      "id": "u-runner",
+      "email": "runner@dineflow.ai",
+      "name": "Service Runner",
+      "passwordHash": "runner123",
+      "role": "runner"
+    }
+  ]
+}

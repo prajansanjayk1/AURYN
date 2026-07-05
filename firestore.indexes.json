@@ -1,0 +1,33 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sessionId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "auditLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "restaurantId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
