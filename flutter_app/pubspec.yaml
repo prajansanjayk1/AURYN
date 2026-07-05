@@ -1,0 +1,46 @@
+name: auryn_app
+description: "AURYN — The AI-Powered Hospitality Operating System. One unified Flutter application serving Customers, Kitchen, Runners, Managers, and Owners."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management & Routing
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+  go_router: ^14.2.0
+
+  # Backend & Supabase Integration
+  supabase_flutter: ^2.5.7
+
+  # Location & Geofencing (Trust Engine)
+  geolocator: ^12.0.0
+
+  # Local Cache & Offline Sync
+  shared_preferences: ^2.2.3
+  flutter_secure_storage: ^9.2.2
+
+  # Utilities & Styling
+  uuid: ^4.4.0
+  lucide_icons: ^0.257.0
+  google_fonts: ^6.2.1
+  fl_chart: ^0.68.0 # For Manager/Owner Business Analytics
+  audioplayers: ^6.0.0 # For notification chimes
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.9
+  riverpod_generator: ^2.4.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/sounds/
+    - assets/images/
