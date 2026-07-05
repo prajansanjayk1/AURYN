@@ -171,6 +171,9 @@ export default function DiningExperience() {
           }
         } else {
           setSession(null);
+          setJoined(false);
+          localStorage.removeItem('df_guest_name');
+          localStorage.removeItem('df_guest_id');
         }
 
         const { data: oData } = await supabase.from('orders').select('*').eq('session_id', tData.current_session_id);
@@ -191,6 +194,9 @@ export default function DiningExperience() {
       } else {
         setSession(null);
         setOrders([]);
+        setJoined(false);
+        localStorage.removeItem('df_guest_name');
+        localStorage.removeItem('df_guest_id');
       }
       setLoading(false);
     };
