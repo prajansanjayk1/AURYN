@@ -894,7 +894,7 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
               
               {/* Cart Container */}
               {/* Cart / Dining Mode Container */}
-              {allOrdersDelivered && !showBillRequest ? (
+              {allOrdersDelivered && !showBillRequest && Object.keys(draftCart).length === 0 ? (
                 <div className="bg-white border border-[#ECECEC] rounded-[24px] p-6 shadow-luxury space-y-6 relative overflow-hidden">
                   <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-gradient-to-tr from-amber-500/20 to-transparent" />
                   

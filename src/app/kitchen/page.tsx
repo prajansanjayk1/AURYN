@@ -67,8 +67,67 @@ export default function KitchenStudio() {
   const updateStatus = async (orderId: string, newStatus: string) => {
     playUISound('click');
     try {
-      const { error } = await supabase.from('orders').update({
+      // If marking whole order as ready, make sure all items are marked as ready too
+      let updatePayload: any = {
         status: newStatus,
+        updated_at: new Date().toISOString()
+      };
+
+      if (newStatus === 'ready' || newStatus === 'quality_check') {
+        const order = orders.find(o => o.id === orderId);
+        if (order) {
+          updatePayload.items = order.items.map(item => ({
+            ...item,
+            status: 'ready'
+          }));
+        }
+      }
+
+      const { error } = await supabase.from('orders').update(updatePayload).eq('id', orderId);
+
+      if (error) throw error;
+      playUISound('success');
+      fetchOrders();
+    } catch (e) {
+      console.error(e);
+      playUISound('error');
+    }
+  };
+
+  const toggleItemStatus = async (orderId: string, itemIndex: number) => {
+    playUISound('click');
+    try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+
+      const updatedItems = [...order.items];
+      const currentItem = updatedItems[itemIndex];
+      const newStatus = currentItem.status === 'ready' ? 'preparing' : 'ready';
+      
+      updatedItems[itemIndex] = {
+        ...currentItem,
+        status: newStatus
+      };
+
+      // Check if all items are now marked as ready
+      const allReady = updatedItems.every(item => item.status === 'ready');
+      
+      let newOrderStatus = order.status;
+      if (allReady) {
+        if (order.status === 'preparing') {
+          newOrderStatus = 'quality_check';
+        } else if (order.status === 'quality_check') {
+          newOrderStatus = 'ready';
+        }
+      } else {
+        if (order.status === 'quality_check' || order.status === 'ready') {
+          newOrderStatus = 'preparing';
+        }
+      }
+
+      const { error } = await supabase.from('orders').update({
+        items: updatedItems,
+        status: newOrderStatus,
         updated_at: new Date().toISOString()
       }).eq('id', orderId);
 
@@ -221,12 +280,36 @@ export default function KitchenStudio() {
                   </div>
                 </div>
 
-                <div className="space-y-2 border-t border-[#FAFAFA] pt-3">
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-[12px] text-neutral-700 font-medium">
-                      <span>{item.quantity}x {item.name}</span>
-                    </div>
-                  ))}
+                <div className="space-y-1.5 border-t border-[#FAFAFA] pt-3">
+                  {order.items.map((item, idx) => {
+                    const isReady = item.status === 'ready';
+                    return (
+                      <div 
+                        key={idx} 
+                        onClick={() => toggleItemStatus(order.id, idx)}
+                        className={`flex justify-between items-center text-[12px] p-2 rounded-lg cursor-pointer transition-colors ${
+                          isReady 
+                            ? 'bg-emerald-50/50 text-emerald-800 border border-emerald-100/50 line-through' 
+                            : 'hover:bg-neutral-50 text-neutral-700 font-medium border border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="checkbox" 
+                            checked={isReady} 
+                            readOnly 
+                            className="w-3.5 h-3.5 rounded text-neutral-900 border-neutral-300 focus:ring-0 cursor-pointer"
+                          />
+                          <span>{item.quantity}x {item.name}</span>
+                        </div>
+                        <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                          isReady ? 'text-emerald-600' : 'text-neutral-400'
+                        }`}>
+                          {isReady ? 'Ready' : 'Prep'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* AI Forecast completion widgets */}
@@ -283,12 +366,36 @@ export default function KitchenStudio() {
                   </div>
                 </div>
 
-                <div className="space-y-2 border-t border-[#FAFAFA] pt-3">
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-[12px] text-neutral-700 font-medium">
-                      <span>{item.quantity}x {item.name}</span>
-                    </div>
-                  ))}
+                <div className="space-y-1.5 border-t border-[#FAFAFA] pt-3">
+                  {order.items.map((item, idx) => {
+                    const isReady = item.status === 'ready';
+                    return (
+                      <div 
+                        key={idx} 
+                        onClick={() => toggleItemStatus(order.id, idx)}
+                        className={`flex justify-between items-center text-[12px] p-2 rounded-lg cursor-pointer transition-colors ${
+                          isReady 
+                            ? 'bg-emerald-50/50 text-emerald-800 border border-emerald-100/50 line-through' 
+                            : 'hover:bg-neutral-50 text-neutral-700 font-medium border border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="checkbox" 
+                            checked={isReady} 
+                            readOnly 
+                            className="w-3.5 h-3.5 rounded text-neutral-900 border-neutral-300 focus:ring-0 cursor-pointer"
+                          />
+                          <span>{item.quantity}x {item.name}</span>
+                        </div>
+                        <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                          isReady ? 'text-emerald-600' : 'text-neutral-400'
+                        }`}>
+                          {isReady ? 'Ready' : 'Prep'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <button
