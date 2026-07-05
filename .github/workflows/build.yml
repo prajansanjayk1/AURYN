@@ -3,7 +3,7 @@ name: Build AURYN App
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch: # Allows manual trigger from the Actions tab
+  workflow_dispatch:
 
 jobs:
   build-android:
@@ -24,6 +24,15 @@ jobs:
         with:
           channel: 'stable'
           cache: true
+
+      - name: Bootstrap Native Wrappers (Android/iOS)
+        run: |
+          mv flutter_app temp_flutter_app
+          flutter create --org com.auryn --project-name auryn_app flutter_app
+          rm -rf flutter_app/lib
+          cp -rf temp_flutter_app/lib flutter_app/lib
+          cp -f temp_flutter_app/pubspec.yaml flutter_app/pubspec.yaml
+          cp -f temp_flutter_app/analysis_options.yaml flutter_app/analysis_options.yaml
 
       - name: Get Dependencies
         run: flutter pub get
@@ -51,6 +60,15 @@ jobs:
         with:
           channel: 'stable'
           cache: true
+
+      - name: Bootstrap Native Wrappers (Android/iOS)
+        run: |
+          mv flutter_app temp_flutter_app
+          flutter create --org com.auryn --project-name auryn_app flutter_app
+          rm -rf flutter_app/lib
+          cp -rf temp_flutter_app/lib flutter_app/lib
+          cp -f temp_flutter_app/pubspec.yaml flutter_app/pubspec.yaml
+          cp -f temp_flutter_app/analysis_options.yaml flutter_app/analysis_options.yaml
 
       - name: Get Dependencies
         run: flutter pub get
