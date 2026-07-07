@@ -371,12 +371,12 @@ export default function ExecutiveCenter() {
     }
   };
 
-  const handleManagerQuery = (queryText: string) => {
+  const handleManagerQuery = async (queryText: string) => {
     playUISound('click');
     setManagerConversation(prev => [...prev, { sender: 'manager', text: queryText }]);
     
     // Process response using live telemetry stats
-    const response = RestaurantIntelligence.chatManager(queryText, state);
+    const response = await RestaurantIntelligence.chatManager(queryText, state);
     
     setTimeout(() => {
       setManagerConversation(prev => [...prev, { sender: 'ai', text: response }]);

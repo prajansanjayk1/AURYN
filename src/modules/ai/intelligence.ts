@@ -203,23 +203,72 @@ export class RestaurantIntelligence {
     const state = await RestaurantRepository.getState();
     const session = state.sessions.find(s => s.id === sessionId);
     const menu = state.menu;
+    const tableId = session?.tableId || 'Takeaway';
 
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (apiKey) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `You are the AURYN AI Concierge de Cuisine. You are assisting a guest named ${guestName} who is ordering in ${tableId === 'Takeaway' ? 'Takeaway Mode' : 'Table ' + tableId}. 
+The current weather is ${context?.weather || 'pleasant'} and the time is ${context?.time || 'evening'}.
+
+Below is the exact menu of the restaurant (do NOT recommend any dishes outside of this list):
+${JSON.stringify(menu, null, 2)}
+
+Here is the guest's query: "${query}"
+
+Return a JSON object conforming exactly to this typescript interface:
+interface AIResponse {
+  message: string; // Your friendly, professional concierge chat response in conversational markdown. Mention pairing suggestions, allergy warnings, or ingredients if asked.
+  recommendations: MenuItem[]; // An array of MenuItem objects from the menu that are highly relevant to the query. Leave empty if none are specifically relevant.
+  suggestedAction?: {
+    type: 'add_to_cart' | 'request_payment' | 'filter_menu';
+    payload: any; // If type is 'add_to_cart', payload MUST be: { menuItemId: string, name: string, quantity: number, price: number }. Populate only if the user explicitly requests to add/order a dish.
+  };
+}
+
+Do not include any markdown formatting like \`\`\`json or backticks. Return raw JSON string only.`
+                }]
+              }]
+            })
+          }
+        );
+
+        if (response.ok) {
+          const resData = await response.json();
+          const text = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const aiRes: AIResponse = JSON.parse(cleanText);
+            return aiRes;
+          }
+        }
+      } catch (err) {
+        console.error('[Gemini AI Concierge] Error:', err);
+      }
+    }
+
+    // Fallback: Rule-based matching if Gemini API Key is missing or fails
     const lowerQuery = query.toLowerCase();
     let message = '';
     let recommendations: MenuItem[] = [];
     let suggestedAction: AIResponse['suggestedAction'] = undefined;
 
-    // Detect weather or time context
     const time = context?.time || 'Evening';
     const weather = context?.weather || 'Mild';
 
-    // 1. Vegetarian query handling
     if (lowerQuery.includes('veg') || lowerQuery.includes('vegetarian') || lowerQuery.includes('no meat')) {
       recommendations = this.getMenuRecommendations(menu, { vegetarian: true });
       message = `Good ${time}, ${guestName}. For our vegetarian guests, I highly recommend starting with our delicate **Edamame Truffle Gyoza** (pan-seared with white truffle oil) followed by our flagship **Truffle Burrata Pizza** baked on 48-hour sourdough. For dessert, the **Smoked Rose Pistachio Kulfi** is completely eggless and premium.`;
     } 
-    
-    // 2. Allergy query handling
     else if (lowerQuery.includes('dairy') || lowerQuery.includes('allergy') || lowerQuery.includes('allergic')) {
       if (lowerQuery.includes('dairy') || lowerQuery.includes('milk') || lowerQuery.includes('cheese')) {
         recommendations = this.getMenuRecommendations(menu, { allergies: ['Dairy'] });
@@ -235,8 +284,6 @@ export class RestaurantIntelligence {
         message = `I have logged your allergy alert, ${guestName}. Let me know if you would like me to filter out dairy, gluten, soy, or nuts.`;
       }
     }
-    
-    // 3. Price-based queries
     else if (lowerQuery.includes('under') || lowerQuery.includes('price') || lowerQuery.includes('cheap') || lowerQuery.includes('budget')) {
       const match = lowerQuery.match(/\d+/);
       const budget = match ? parseInt(match[0], 10) : 500;
@@ -248,21 +295,15 @@ export class RestaurantIntelligence {
         message = `Our starting plates begin at ₹240. I suggest trying our refreshing **Himalayan Peach Iced Nectar** (₹240) or **Smoked Rose Pistachio Kulfi** (₹320).`;
       }
     }
-    
-    // 4. Wine pairing
     else if (lowerQuery.includes('pair') && (lowerQuery.includes('slider') || lowerQuery.includes('wagyu') || lowerQuery.includes('burger'))) {
       const sliders = menu.find(m => m.id === 'm2');
       if (sliders) recommendations.push(sliders);
       message = `For the **Charcoal Wagyu Sliders**, the rich marbling of A5 Wagyu and melted Gruyère cheese pairs exquisitely with a full-bodied red vintage or our dry sparkling herbal infusions. Would you like me to request a beverage recommendation?`;
     }
-    
-    // 5. Chef recommendations
     else if (lowerQuery.includes('recommend') || lowerQuery.includes('special') || lowerQuery.includes('best') || lowerQuery.includes('today')) {
       recommendations = this.getMenuRecommendations(menu, {});
       message = `The Chef’s absolute masterpieces for this ${weather.toLowerCase()} ${time.toLowerCase()} are the **Truffle Burrata Pizza** and the **Saffron Lobster Bisque**. Both offer rich, warming flavor profiles perfect for our current dining session.`;
     }
-    
-    // 6. Direct ordering execution
     else if (lowerQuery.includes('add') || lowerQuery.includes('order') || lowerQuery.includes('want to get') || lowerQuery.includes('get me')) {
       let itemToAdd: MenuItem | undefined = undefined;
       let quantity = 1;
@@ -302,8 +343,6 @@ export class RestaurantIntelligence {
         message = `I couldn't quite identify which dish you'd like to add. Did you mean the **Truffle Burrata Pizza**, **Charcoal Wagyu Sliders**, or **Edamame Truffle Gyoza**?`;
       }
     }
-    
-    // 7. General conversational fallback
     else {
       recommendations = menu.slice(0, 2);
       message = `Hello, ${guestName}. Welcome to **AURYN**. I am your Specialized Restaurant Intelligence Concierge. I can recommend dishes based on your preferences, coordinate wine pairings, filter for allergens, or even add items directly to your table cart. What can I assist you with today?`;
@@ -317,7 +356,49 @@ export class RestaurantIntelligence {
   }
 
   // 7. Manager AI: Conversational Business Advisor
-  public static chatManager(query: string, state: RestaurantState): string {
+  public static async chatManager(query: string, state: RestaurantState): Promise<string> {
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (apiKey) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `You are the AURYN Executive Operations AI Advisor. You are analyzing the live telemetry and database state of the restaurant. 
+
+Below is the active state of the restaurant including tables, active sessions, orders, menu items, inventory levels, and audit logs:
+${JSON.stringify({
+  tables: state.tables,
+  activeSessions: state.sessions.filter(s => s.status !== 'completed'),
+  orders: state.orders.filter(o => o.status !== 'delivered'),
+  inventory: state.inventory,
+}, null, 2)}
+
+Here is the manager's query: "${query}"
+
+Provide a brief, highly professional, data-driven, and actionable response. Focus on bottleneck detection, revenue insights, marketing ideas, or inventory warnings. Use bullet points where appropriate.`
+                }]
+              }]
+            })
+          }
+        );
+
+        if (response.ok) {
+          const resData = await response.json();
+          const text = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text.trim();
+        }
+      } catch (err) {
+        console.error('[Gemini AI Manager] Error:', err);
+      }
+    }
+
+    // Fallback: Rule-based matching
     const lower = query.toLowerCase();
     const completedSessions = state.sessions.filter(s => s.status === 'completed');
     const totalRevenue = completedSessions.reduce((sum, s) => {
