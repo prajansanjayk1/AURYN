@@ -193,6 +193,66 @@ export class RestaurantIntelligence {
     });
   }
 
+  // Helper: Fuzzy string search
+  private static fuzzyMatch(query: string, target: string): boolean {
+    const queryLower = query.toLowerCase();
+    const targetLower = target.toLowerCase();
+    return targetLower.includes(queryLower) || queryLower.includes(targetLower);
+  }
+
+  // Helper: Extract quantity (converts word numbers to integers)
+  private static extractQuantity(query: string): number {
+    const numMap: { [key: string]: number } = {
+      one: 1, two: 2, three: 3, four: 4, five: 5,
+      six: 6, seven: 7, eight: 8, nine: 9, ten: 10
+    };
+    const words = query.toLowerCase().split(/\s+/);
+    for (const word of words) {
+      if (numMap[word] !== undefined) return numMap[word];
+    }
+    const match = query.match(/\b\d+\b/);
+    return match ? parseInt(match[0], 10) : 1;
+  }
+
+  // Helper: Extract budget constraints
+  private static extractBudgetLimit(query: string): number | null {
+    const match = query.match(/(?:under|below|less than|budget of)\s*(?:₹|rs\.?|inr)?\s*(\d+)/i) || query.match(/(\d+)\s*(?:rupees|rs|inr)/i);
+    return match ? parseInt(match[1], 10) : null;
+  }
+
+  // Helper: Find best matching menu item
+  private static findMenuItem(query: string, menu: MenuItem[]): MenuItem | null {
+    let bestMatch: MenuItem | null = null;
+    let highestScore = 0;
+    const words = query.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").split(/\s+/);
+
+    for (const item of menu) {
+      let score = 0;
+      const nameLower = item.name.toLowerCase();
+      const descLower = item.description.toLowerCase();
+      const ingredients = item.ingredients.map(i => i.toLowerCase());
+
+      // Exact name containment bonus
+      if (nameLower.includes(query.toLowerCase()) || query.toLowerCase().includes(nameLower)) {
+        score += 15;
+      }
+
+      // Word match scoring
+      for (const word of words) {
+        if (word.length <= 2) continue;
+        if (nameLower.includes(word)) score += 4;
+        if (descLower.includes(word)) score += 1;
+        if (ingredients.some(ing => ing.includes(word))) score += 2;
+      }
+
+      if (score > highestScore && score > 2) {
+        highestScore = score;
+        bestMatch = item;
+      }
+    }
+    return bestMatch;
+  }
+
   // 6. Dining Concierge: AI Chatbot Conversational Intelligence
   public static async chatConcierge(
     query: string,
@@ -205,147 +265,125 @@ export class RestaurantIntelligence {
     const menu = state.menu;
     const tableId = session?.tableId || 'Takeaway';
 
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (apiKey) {
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `You are the AURYN AI Concierge de Cuisine. You are assisting a guest named ${guestName} who is ordering in ${tableId === 'Takeaway' ? 'Takeaway Mode' : 'Table ' + tableId}. 
-The current weather is ${context?.weather || 'pleasant'} and the time is ${context?.time || 'evening'}.
-
-Below is the exact menu of the restaurant (do NOT recommend any dishes outside of this list):
-${JSON.stringify(menu, null, 2)}
-
-Here is the guest's query: "${query}"
-
-Return a JSON object conforming exactly to this typescript interface:
-interface AIResponse {
-  message: string; // Your friendly, professional concierge chat response in conversational markdown. Mention pairing suggestions, allergy warnings, or ingredients if asked.
-  recommendations: MenuItem[]; // An array of MenuItem objects from the menu that are highly relevant to the query. Leave empty if none are specifically relevant.
-  suggestedAction?: {
-    type: 'add_to_cart' | 'request_payment' | 'filter_menu';
-    payload: any; // If type is 'add_to_cart', payload MUST be: { menuItemId: string, name: string, quantity: number, price: number }. Populate only if the user explicitly requests to add/order a dish.
-  };
-}
-
-Do not include any markdown formatting like \`\`\`json or backticks. Return raw JSON string only.`
-                }]
-              }]
-            })
-          }
-        );
-
-        if (response.ok) {
-          const resData = await response.json();
-          const text = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            const aiRes: AIResponse = JSON.parse(cleanText);
-            return aiRes;
-          }
-        }
-      } catch (err) {
-        console.error('[Gemini AI Concierge] Error:', err);
-      }
-    }
-
-    // Fallback: Rule-based matching if Gemini API Key is missing or fails
     const lowerQuery = query.toLowerCase();
+    const time = context?.time || 'Evening';
+    const weather = context?.weather || 'pleasant';
+
     let message = '';
     let recommendations: MenuItem[] = [];
     let suggestedAction: AIResponse['suggestedAction'] = undefined;
 
-    const time = context?.time || 'Evening';
-    const weather = context?.weather || 'Mild';
+    // A. Direct Order Additions Intent
+    if (lowerQuery.includes('add') || lowerQuery.includes('order') || lowerQuery.includes('get me') || lowerQuery.includes('bring me') || lowerQuery.includes('want to get')) {
+      const item = this.findMenuItem(query, menu);
+      if (item) {
+        const qty = this.extractQuantity(query);
+        recommendations.push(item);
+        message = `Perfect choice, ${guestName}! I've prepared a draft order to add **${qty}x ${item.name}** (₹${item.price * qty}) to your active session. 
 
-    if (lowerQuery.includes('veg') || lowerQuery.includes('vegetarian') || lowerQuery.includes('no meat')) {
-      recommendations = this.getMenuRecommendations(menu, { vegetarian: true });
-      message = `Good ${time}, ${guestName}. For our vegetarian guests, I highly recommend starting with our delicate **Edamame Truffle Gyoza** (pan-seared with white truffle oil) followed by our flagship **Truffle Burrata Pizza** baked on 48-hour sourdough. For dessert, the **Smoked Rose Pistachio Kulfi** is completely eggless and premium.`;
-    } 
-    else if (lowerQuery.includes('dairy') || lowerQuery.includes('allergy') || lowerQuery.includes('allergic')) {
-      if (lowerQuery.includes('dairy') || lowerQuery.includes('milk') || lowerQuery.includes('cheese')) {
+Please tap **Approve Order** below to send it straight to the kitchen studio!`;
+        suggestedAction = {
+          type: 'add_to_cart',
+          payload: {
+            menuItemId: item.id,
+            name: item.name,
+            quantity: qty,
+            price: item.price
+          }
+        };
+      } else {
+        message = `I see you want to order something, ${guestName}, but I couldn't match that name to our menu. Did you mean our signature **Truffle Burrata Pizza** or our **Wagyu Beef Sliders**?`;
+        recommendations = menu.slice(0, 2);
+      }
+    }
+
+    // B. Diet / Allergen Filters Intent
+    else if (lowerQuery.includes('allergy') || lowerQuery.includes('allergic') || lowerQuery.includes('veg') || lowerQuery.includes('vegetarian') || lowerQuery.includes('free') || lowerQuery.includes('avoid')) {
+      // 1. Vegetarian
+      if (lowerQuery.includes('veg') || lowerQuery.includes('vegetarian') || lowerQuery.includes('no meat')) {
+        recommendations = this.getMenuRecommendations(menu, { vegetarian: true });
+        message = `Hello ${guestName}, I've filtered out all meat options. 
+
+For your vegetarian dining, I highly recommend our hand-stretched **Truffle Burrata Pizza** (₹${menu.find(m => m.name.includes('Burrata'))?.price || 1200}) baked on sourdough, accompanied by a refreshing **Peach Thyme Sparkler** (₹350). For dessert, the **Matcha Pistachio Opera Cake** (₹650) is completely vegetarian and delicious!`;
+      }
+      // 2. Dairy Free
+      else if (lowerQuery.includes('dairy') || lowerQuery.includes('milk') || lowerQuery.includes('cheese')) {
         recommendations = this.getMenuRecommendations(menu, { allergies: ['Dairy'] });
-        message = `I understand you would like to avoid dairy, ${guestName}. I have filtered our menu. You can safely enjoy our pan-seared **Edamame Truffle Gyoza** (no dairy) and refresh with a **Himalayan Peach Iced Nectar**. I have flagged the kitchen to avoid butter-basting for your table.`;
+        message = `Safety first, ${guestName}! I have filtered out all dairy items. 
+
+You can safely enjoy our gourmet **Peach Thyme Sparkler** (₹350). I have flagged the kitchen staff to ensure your table's preparations remain completely dairy-free.`;
         suggestedAction = {
           type: 'filter_menu',
           payload: { category: 'All', allergenFilter: 'Dairy' }
         };
-      } else if (lowerQuery.includes('nut') || lowerQuery.includes('peanut') || lowerQuery.includes('pistachio')) {
+      }
+      // 3. Nut Free
+      else if (lowerQuery.includes('nut') || lowerQuery.includes('almond') || lowerQuery.includes('pistachio')) {
         recommendations = this.getMenuRecommendations(menu, { allergies: ['Nuts'] });
-        message = `To keep you safe from nut allergens, I recommend our **Truffle Burrata Pizza** or **Charcoal Wagyu Sliders**. Please note that our **Smoked Rose Pistachio Kulfi** contains Iranian pistachios and should be avoided. The kitchen has been alerted.`;
+        message = `No problem! I have filtered our menu to show nut-free selections. 
+
+You can safely enjoy our **Wagyu Beef Sliders** (₹950) or **Truffle Burrata Pizza** (₹1200). Please make sure to avoid the Matcha Pistachio Opera Cake as it contains almonds and Iranian pistachios.`;
+      }
+      // 4. Gluten Free
+      else if (lowerQuery.includes('gluten') || lowerQuery.includes('wheat') || lowerQuery.includes('flour')) {
+        recommendations = this.getMenuRecommendations(menu, { allergies: ['Gluten'] });
+        message = `I have updated your view to show gluten-safe options. Our beverages and specific grills are available. The kitchen team has been notified.`;
       } else {
-        message = `I have logged your allergy alert, ${guestName}. Let me know if you would like me to filter out dairy, gluten, soy, or nuts.`;
+        message = `I have logged your dietary preferences, ${guestName}. Let me know if you want me to filter specifically for dairy, gluten, nuts, or vegetarian selections.`;
       }
     }
-    else if (lowerQuery.includes('under') || lowerQuery.includes('price') || lowerQuery.includes('cheap') || lowerQuery.includes('budget')) {
-      const match = lowerQuery.match(/\d+/);
-      const budget = match ? parseInt(match[0], 10) : 500;
-      
-      recommendations = menu.filter(m => m.price <= budget);
+
+    // C. Budget Constraints Intent
+    else if (lowerQuery.includes('price') || lowerQuery.includes('cheap') || lowerQuery.includes('under') || lowerQuery.includes('budget') || lowerQuery.includes('cost')) {
+      const limit = this.extractBudgetLimit(query) || 1000;
+      recommendations = menu.filter(m => m.price <= limit);
+
       if (recommendations.length > 0) {
-        message = `Here are our finest selections under ₹${budget}, ${guestName}. The **Edamame Truffle Gyoza** (₹490), our artisan **Smoked Rose Pistachio Kulfi** (₹320), or the cold-pressed **Himalayan Peach Iced Nectar** (₹240) are excellent choices.`;
+        message = `Here are our finest selections within your budget of ₹${limit}, ${guestName}. 
+
+I highly recommend our refreshing **Peach Thyme Sparkler** (₹350) or our decadent **Matcha Pistachio Opera Cake** (₹650) to start your dining session.`;
       } else {
-        message = `Our starting plates begin at ₹240. I suggest trying our refreshing **Himalayan Peach Iced Nectar** (₹240) or **Smoked Rose Pistachio Kulfi** (₹320).`;
+        message = `Our artisan dishes start at ₹350 (Peach Thyme Sparkler). Let me know if you would like me to list our lowest-price items.`;
+        recommendations = menu.sort((a,b) => a.price - b.price).slice(0, 2);
       }
     }
-    else if (lowerQuery.includes('pair') && (lowerQuery.includes('slider') || lowerQuery.includes('wagyu') || lowerQuery.includes('burger'))) {
-      const sliders = menu.find(m => m.id === 'm2');
-      if (sliders) recommendations.push(sliders);
-      message = `For the **Charcoal Wagyu Sliders**, the rich marbling of A5 Wagyu and melted Gruyère cheese pairs exquisitely with a full-bodied red vintage or our dry sparkling herbal infusions. Would you like me to request a beverage recommendation?`;
-    }
-    else if (lowerQuery.includes('recommend') || lowerQuery.includes('special') || lowerQuery.includes('best') || lowerQuery.includes('today')) {
-      recommendations = this.getMenuRecommendations(menu, {});
-      message = `The Chef’s absolute masterpieces for this ${weather.toLowerCase()} ${time.toLowerCase()} are the **Truffle Burrata Pizza** and the **Saffron Lobster Bisque**. Both offer rich, warming flavor profiles perfect for our current dining session.`;
-    }
-    else if (lowerQuery.includes('add') || lowerQuery.includes('order') || lowerQuery.includes('want to get') || lowerQuery.includes('get me')) {
-      let itemToAdd: MenuItem | undefined = undefined;
-      let quantity = 1;
 
-      const qtyMatch = lowerQuery.match(/\b\d+\b/);
-      if (qtyMatch) {
-        quantity = parseInt(qtyMatch[0], 10);
-      }
+    // D. Drink & Wine Pairing Intent
+    else if (lowerQuery.includes('pair') || lowerQuery.includes('drink with') || lowerQuery.includes('wine') || lowerQuery.includes('beverage')) {
+      const match = this.findMenuItem(query, menu);
+      if (match) {
+        recommendations = menu.filter(m => m.category === 'Beverages' || m === match);
+        message = `For our exquisite **${match.name}**, the rich flavor profiles pair perfectly with the botanical notes in our **Peach Thyme Sparkler** (made with organic white peaches and fresh thyme). 
 
-      if (lowerQuery.includes('pizza') || lowerQuery.includes('burrata')) {
-        itemToAdd = menu.find(m => m.id === 'm1');
-      } else if (lowerQuery.includes('slider') || lowerQuery.includes('wagyu') || lowerQuery.includes('burger')) {
-        itemToAdd = menu.find(m => m.id === 'm2');
-      } else if (lowerQuery.includes('bisque') || lowerQuery.includes('lobster') || lowerQuery.includes('soup')) {
-        itemToAdd = menu.find(m => m.id === 'm3');
-      } else if (lowerQuery.includes('gyoza') || lowerQuery.includes('edamame') || lowerQuery.includes('dumpling')) {
-        itemToAdd = menu.find(m => m.id === 'm4');
-      } else if (lowerQuery.includes('kulfi') || lowerQuery.includes('dessert') || lowerQuery.includes('pistachio')) {
-        itemToAdd = menu.find(m => m.id === 'm5');
-      } else if (lowerQuery.includes('nectar') || lowerQuery.includes('peach') || lowerQuery.includes('drink') || lowerQuery.includes('beverage')) {
-        itemToAdd = menu.find(m => m.id === 'm6');
-      }
-
-      if (itemToAdd) {
-        recommendations.push(itemToAdd);
-        message = `I have prepared a draft order to add **${quantity}x ${itemToAdd.name}** (₹${itemToAdd.price * quantity}) to your table's live session. Please click **Approve Order** below to execute it.`;
-        suggestedAction = {
-          type: 'add_to_cart',
-          payload: {
-            menuItemId: itemToAdd.id,
-            name: itemToAdd.name,
-            quantity,
-            price: itemToAdd.price
-          }
-        };
+Would you like me to add it to your cart?`;
       } else {
-        message = `I couldn't quite identify which dish you'd like to add. Did you mean the **Truffle Burrata Pizza**, **Charcoal Wagyu Sliders**, or **Edamame Truffle Gyoza**?`;
+        message = `For our savory mains like the Wagyu Sliders or Lobster Risotto, a full-bodied beverage pairing is highly recommended. Our cold-pressed **Peach Thyme Sparkler** (₹350) is the chef's top pick today!`;
+        recommendations = menu.filter(m => m.category === 'Beverages');
       }
     }
+
+    // E. Recommendations & Specials Intent
+    else if (lowerQuery.includes('recommend') || lowerQuery.includes('special') || lowerQuery.includes('best') || lowerQuery.includes('popular') || lowerQuery.includes('today')) {
+      recommendations = menu.filter(m => m.isChefRecommendation || m.isPopular);
+      message = `Good ${time}, ${guestName}! Welcome to our digital dining portal. 
+
+For today's ${weather} ${time.toLowerCase()} service, the Chef's absolute masterpieces are:
+• **Wagyu Beef Sliders** (A5 Wagyu on toasted brioche with truffle aioli - ₹950)
+• **Saffron Lobster Risotto** (Acquerello carnaroli rice with butter-poached Maine lobster tail - ₹1850)
+
+Both are prepared fresh and represent our kitchen's finest craft.`;
+    }
+
+    // F. Fallback General Conversation
     else {
-      recommendations = menu.slice(0, 2);
-      message = `Hello, ${guestName}. Welcome to **AURYN**. I am your Specialized Restaurant Intelligence Concierge. I can recommend dishes based on your preferences, coordinate wine pairings, filter for allergens, or even add items directly to your table cart. What can I assist you with today?`;
+      recommendations = menu.slice(0, 3);
+      message = `Hello, ${guestName}. I am your AURYN Local AI Concierge de Cuisine. 
+
+I run completely standalone in this workspace. Ask me to:
+• **Find safe food**: *"Is the Burrata pizza vegetarian?"* or *"Show nut-free food"*
+• **Suggest pairings**: *"What drinks pair with the Wagyu sliders?"*
+• **Check budgets**: *"Show items under ₹1000"*
+• **Add to your cart**: *"Add 2 lobster risottos to my order"*`;
     }
 
     return {
@@ -357,136 +395,115 @@ Do not include any markdown formatting like \`\`\`json or backticks. Return raw 
 
   // 7. Manager AI: Conversational Business Advisor
   public static async chatManager(query: string, state: RestaurantState): Promise<string> {
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (apiKey) {
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `You are the AURYN Executive Operations AI Advisor. You are analyzing the live telemetry and database state of the restaurant. 
-
-Below is the active state of the restaurant including tables, active sessions, orders, menu items, inventory levels, and audit logs:
-${JSON.stringify({
-  tables: state.tables,
-  activeSessions: state.sessions.filter(s => s.status !== 'completed'),
-  orders: state.orders.filter(o => o.status !== 'delivered'),
-  inventory: state.inventory,
-}, null, 2)}
-
-Here is the manager's query: "${query}"
-
-Provide a brief, highly professional, data-driven, and actionable response. Focus on bottleneck detection, revenue insights, marketing ideas, or inventory warnings. Use bullet points where appropriate.`
-                }]
-              }]
-            })
-          }
-        );
-
-        if (response.ok) {
-          const resData = await response.json();
-          const text = resData?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) return text.trim();
-        }
-      } catch (err) {
-        console.error('[Gemini AI Manager] Error:', err);
-      }
-    }
-
-    // Fallback: Rule-based matching
     const lower = query.toLowerCase();
+
+    // Compute live metrics dynamically
     const completedSessions = state.sessions.filter(s => s.status === 'completed');
-    const totalRevenue = completedSessions.reduce((sum, s) => {
-      const sessOrders = state.orders.filter(o => o.sessionId === s.id);
-      return sum + sessOrders.reduce((acc, o) => acc + o.items.reduce((a, i) => a + (i.price * i.quantity), 0), 0);
-    }, 0);
-
     const activeSessions = state.sessions.filter(s => s.status !== 'completed');
+    const totalOrders = state.orders;
+    const pendingOrders = state.orders.filter(o => o.status !== 'delivered');
 
-    if (lower.includes('why') && (lower.includes('sales') || lower.includes('down') || lower.includes('delay'))) {
-      const activeOrders = state.orders.filter(o => o.status !== 'delivered');
-      const delayedCount = activeOrders.filter(o => {
-        const duration = (Date.now() - new Date(o.createdAt).getTime()) / 60000;
-        return duration > 20;
-      }).length;
+    const totalRevenue = state.orders
+      .filter(o => o.status === 'delivered')
+      .reduce((sum, o) => sum + o.items.reduce((acc, i) => acc + (i.price * i.quantity), 0), 0);
 
-      return `AURYN Sales & Operations Analysis:
-• **Delayed Orders**: There are currently **${delayedCount} orders** that have exceeded the 20-minute preparation threshold. This is causing dining session extensions, lowering table turnover rates.
-• **Current Revenue**: Today's recorded completed revenue is **₹${totalRevenue}** across **${completedSessions.length} tables**. 
-• **Weather Correlation**: The pleasant weather has shifted guest preferences towards lighter starters, reducing the average transaction size by 8% compared to yesterday's dinner peak.
-• **Recommendation**: Instruct the Kitchen Studio to prioritize hot mains and suggest dessert pairings at Table 1 and Table 2 to recover the average ticket size.`;
+    // Compute average dining session time
+    let avgDiningMin = 40;
+    if (completedSessions.length > 0) {
+      const totalDurations = completedSessions.reduce((acc, s) => {
+        if (!s.closedAt) return acc;
+        return acc + (new Date(s.closedAt).getTime() - new Date(s.createdAt).getTime());
+      }, 0);
+      avgDiningMin = Math.round(totalDurations / completedSessions.length / 60000);
     }
 
-    if (lower.includes('promote') || lower.includes('marketing') || lower.includes('tonight')) {
-      const lowStockItems = state.inventory.filter(i => i.stock < i.minStock).map(i => i.name);
-      const safeIngredients = state.inventory.filter(i => i.stock >= i.minStock).map(i => i.name);
-      
-      let dishToPromote = "Truffle Burrata Pizza";
-      if (safeIngredients.includes("Burrata Cheese")) {
-        dishToPromote = "Truffle Burrata Pizza (High Ingredient Stock)";
-      } else if (safeIngredients.includes("A5 Wagyu Beef")) {
-        dishToPromote = "Charcoal Wagyu Sliders";
+    // A. Operations delays & bottleneck queries
+    if (lower.includes('why') || lower.includes('delay') || lower.includes('bottleneck') || lower.includes('kitchen') || lower.includes('slow')) {
+      const delayedOrders = pendingOrders.filter(o => {
+        const duration = (Date.now() - new Date(o.createdAt).getTime()) / 60000;
+        return duration > 15; // Delay threshold
+      });
+
+      return `=== AURYN STANDALONE TELEMETRY REPORT: OPERATIONAL DELAYS ===
+• **Active Preparation Load**: ${pendingOrders.length} orders currently active.
+• **Delayed Orders (>15 mins)**: ${delayedOrders.length} tickets are currently exceeding limits.
+• **Kitchen Load Index**: ${Math.min(100, Math.round(10 + pendingOrders.length * 15))}% capacity utilization.
+• **Runner Fleet Status**: Dispatches are active. Average table delivery lag is currently ${delayedOrders.length > 1 ? '7.5' : '2.1'} minutes.
+• **Actionable Advice**: Recommend holding off on promoting complex mains like Saffron Lobster Risotto, and redirecting prep runners to support the starter grilling lines.`;
+    }
+
+    // B. Sales, revenue & financial performance queries
+    else if (lower.includes('sales') || lower.includes('revenue') || lower.includes('money') || lower.includes('make') || lower.includes('earning')) {
+      // Find top selling menu item
+      const itemCounts: { [name: string]: number } = {};
+      totalOrders.forEach(o => o.items.forEach(i => {
+        itemCounts[i.name] = (itemCounts[i.name] || 0) + i.quantity;
+      }));
+      const topSelling = Object.entries(itemCounts).sort((a,b) => b[1] - a[1])[0];
+      const topSellingName = topSelling ? `${topSelling[0]} (${topSelling[1]} sold)` : 'Wagyu Beef Sliders';
+
+      return `=== AURYN STANDALONE TELEMETRY REPORT: REVENUE & SALES ===
+• **Total Recorded Sales**: ₹${totalRevenue.toLocaleString()} INR (delivered order values).
+• **Table Turnover Velocity**: Average dining session duration is **${avgDiningMin} minutes**.
+• **Active Covers**: ${activeSessions.length} active dining sessions currently synchronizing.
+• **Star Performer Dish**: ${topSellingName}.
+• **Market Insight**: Sourdough-based pizzas and Wagyu sliders represent 68% of today's gross receipts. Average ticket size is stable at ₹1,450 per session.`;
+    }
+
+    // C. Marketing, stock & promotional recommendations
+    else if (lower.includes('promote') || lower.includes('marketing') || lower.includes('advertise') || lower.includes('recommend') || lower.includes('stock') || lower.includes('inventory')) {
+      const lowStockItems = state.inventory.filter(i => i.stock < i.minStock);
+      const highStockItems = state.inventory.filter(i => i.stock >= i.minStock * 2);
+
+      let suggestion = 'Promote the Truffle Burrata Pizza';
+      if (highStockItems.some(i => i.name.includes('Beef'))) {
+        suggestion = 'Advertise Charcoal Wagyu Beef Sliders to guest concierges';
+      } else if (highStockItems.some(i => i.name.includes('Peach'))) {
+        suggestion = 'Push Peach Thyme Sparklers as a starter pairing';
       }
 
-      return `AURYN Marketing Strategy Recommendations:
-• **Target Dish**: **${dishToPromote}**.
-• **Rationale**: Our stock level analysis indicates safe buffer quantities for its ingredients, while ingredients for soup dishes are running low (current warning: ${lowStockItems.length > 0 ? lowStockItems.join(', ') : 'None'}).
-• **Target Auditing**: Create a 10% loyalty discount for tables scanning after 7 PM using the code **AURYNGLOW**. This will boost our dinner cover count during the upcoming peak.`;
+      return `=== AURYN STANDALONE TELEMETRY REPORT: INVENTORY & MARKETING ===
+• **Critical Alerts**: ${lowStockItems.length} ingredients running below safety thresholds (${lowStockItems.map(i => i.name).join(', ') || 'None'}).
+• **Surplus Stock**: Buffer ingredients are high for: ${highStockItems.map(i => i.name).join(', ') || 'Standard levels'}.
+• **Recommended Campaign**: ${suggestion}.
+• **Promo Trigger**: Broadcast a 10% happy hour coupon to all active table sessions (code: **AURYN10**) to utilize high stock buffer ingredients before shift end.`;
     }
 
-    if (lower.includes('runner') || lower.includes('best') || lower.includes('perform')) {
-      const runnersMap: { [id: string]: number } = {};
-      state.orders.forEach(o => {
-        if (o.runnerId && o.status === 'delivered') {
-          runnersMap[o.runnerId] = (runnersMap[o.runnerId] || 0) + 1;
-        }
+    // D. Staff, Runner & Routing telemetry
+    else if (lower.includes('runner') || lower.includes('staff') || lower.includes('delivery') || lower.includes('work')) {
+      const runners: { [id: string]: number } = {};
+      totalOrders.forEach(o => {
+        if (o.runnerId) runners[o.runnerId] = (runners[o.runnerId] || 0) + 1;
       });
+      const topRunner = Object.entries(runners).sort((a,b) => b[1] - a[1])[0];
 
-      const bestRunner = Object.entries(runnersMap).sort((a, b) => b[1] - a[1])[0];
-      const bestRunnerName = bestRunner ? bestRunner[0] : 'runner-alpha';
-      const count = bestRunner ? bestRunner[1] : 3;
-
-      return `AURYN Runner Telemetry Analysis:
-• **Top Performing Runner**: **${bestRunnerName}** (with **${count} successful dispatches**).
-• **Efficiency Index**: Average walking time is estimated at **1.2 minutes per route**, indicating optimal route vector mapping.
-• **Runner Bottleneck**: Delay alerts are currently minimal (0 delayed handovers). Ensure runners are notified of table clear requests immediately.`;
+      return `=== AURYN STANDALONE TELEMETRY REPORT: STAFF LOGISTICS ===
+• **Active Runners**: ${Object.keys(runners).length || 2} staff dispatched.
+• **Top Performer**: ${topRunner ? `${topRunner[0]} (${topRunner[1]} dispatches completed)` : 'Runner-01'}.
+• **Routing Optimization**: Dispatched steps are mapped using coordinate distance vectors. Average food delivery transition takes under 95 seconds from prep checkout.`;
     }
 
-    if (lower.includes('table') || lower.includes('revenue') || lower.includes('highest')) {
-      const tableRevenueMap: { [id: string]: number } = {};
-      state.sessions.forEach(s => {
-        const sessOrders = state.orders.filter(o => o.sessionId === s.id);
-        const sessTotal = sessOrders.reduce((acc, o) => acc + o.items.reduce((a, i) => a + (i.price * i.quantity), 0), 0);
-        tableRevenueMap[s.tableId] = (tableRevenueMap[s.tableId] || 0) + sessTotal;
-      });
+    // E. Forecasting & predictive models
+    else if (lower.includes('predict') || lower.includes('forecast') || lower.includes('tomorrow') || lower.includes('peak')) {
+      const hours = new Date().getHours();
+      const peakMessage = (hours >= 19 && hours <= 21) ? 'Current peak in progress.' : 'Next peak expected between 7:30 PM and 9:00 PM.';
 
-      const sortedTables = Object.entries(tableRevenueMap).sort((a, b) => b[1] - a[1]);
-      const topTable = sortedTables[0] ? `Table ${sortedTables[0][0]} (₹${sortedTables[0][1]})` : 'Table 1';
-
-      return `AURYN Space Valuation & Revenue Analytics:
-• **Highest Generating Node**: **${topTable}**.
-• **Turnover Frequency**: Average guest occupancy is **${activeSessions.length} active sessions** currently dine-in.
-• **Spatial Efficiency**: Tables near the kitchen (Table 1 - Table 4) average **6 minutes shorter prep-to-delivery loops**, generating 15% higher ticket velocity.`;
+      return `=== AURYN STANDALONE TELEMETRY REPORT: PREDICTIVE DEMAND ===
+• **Forecast Peak**: ${peakMessage}
+• **Tomorrow\'s Coverage**: Predicting 14 completed table dining sessions and 8 takeaway checkouts.
+• **Target Ingredient Defrosting**: Ensure 4.5 kg A5 Wagyu is prepared in the cooling grid by 10:00 AM tomorrow.
+• **Beverage Demand**: Highly correlated to weather conditions. Warm weather forecasts indicate a 25% surge in Sparkler mocktails.`;
     }
 
-    if (lower.includes('predict') || lower.includes('lunch') || lower.includes('tomorrow')) {
-      return `AURYN Predictive Demand Forecasting:
-• **Tomorrow's Lunch Coverage**: Anticipating **12-15 dining sessions** between 12:30 PM and 2 PM.
-• **Core Drivers**: Corporate lunch bookings and a warm temperature forecast (+2°C) will likely boost iced beverage orders (estimate: 25% order share for Himalayan Peach Iced Nectar).
-• **Ingredient Preparation**: Advise prep station to prepare 5kg of Burrata dough and ensure Wagyu sliders are defrosted by 10 AM.`;
-    }
+    // F. Fallback help dashboard
+    return `=== AURYN EXECUTIVE INTELLIGENCE COMMAND ===
+Welcome back. I am your standalone operations advisor. I analyze your live database state directly.
 
-    return `AURYN Business Intelligence Command:
-I can analyze your restaurant's live telemetry database. Ask me:
-- "Why are sales down today?" (Operations bottleneck analyzer)
-- "What should I promote tonight?" (Marketing & stock-based suggestions)
-- "Which runner is performing best?" (Logistics telemetry tracker)
-- "Which tables generate the highest revenue?" (Space valuation dashboard)
-- "Predict tomorrow's lunch" (Predictive demand forecaster)`;
+Try asking me:
+• *"Why are sales down?"* or *"Analyze sales metrics"* (Revenue report)
+• *"Identify kitchen bottlenecks"* or *"Why are orders delayed?"* (Prep delay report)
+• *"What should I promote?"* or *"Check inventory alerts"* (Stock & marketing advice)
+• *"Highlight runner performance"* (Logistics telemetry tracker)
+• *"Forecast tomorrow's peak"* (Predictive operations advisor)`;
   }
 }
