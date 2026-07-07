@@ -1,4 +1,4 @@
-import { MenuItem, ReasoningResult } from '../types';
+import { MenuItem, ReasoningResult, EntityExtraction } from '../types';
 import { SentimentState } from '../sentiment/detector';
 
 export class ResponseGenerator {
@@ -24,7 +24,8 @@ export class ResponseGenerator {
     intents: string[],
     recommendations: MenuItem[],
     reasoning?: ReasoningResult,
-    customPrefix?: string
+    customPrefix?: string,
+    entities?: EntityExtraction
   ): string {
     // 1. Determine tone style based on sentiment or logged defaults
     let tone: 'luxury' | 'cafe' | 'friendly' = 'luxury';
@@ -89,6 +90,33 @@ Would you like me to pair these with our refreshing **Peach Thyme Sparkler** (�
     
     else {
       body += `I am at your service. Tell me if you are looking for specific cuisines, allergen exclusions, or would like me to add an item directly to your cart.`;
+    }
+
+    // 5. Add custom entity clarifications (e.g. spicy adjustments, egg exclusions)
+    if (entities) {
+      const wantsSpicy = entities.modifiers.includes('spicy') || entities.modifiers.includes('hot');
+      if (wantsSpicy) {
+        const hasSpicyItem = recommendations.some(r => r.name.toLowerCase().includes('chili') || r.description.toLowerCase().includes('spicy'));
+        if (!hasSpicyItem) {
+          body += `\n\n*🌶️ Note: We noticed you requested spicier options. While our core menu items are prepared mild-to-medium, our kitchen de cuisine can easily customize any of these selections with extra fresh chilies or house-made chili oil.*`;
+        }
+      }
+
+      if (entities.negations.length > 0) {
+        const negatedIngredients = entities.negations.map(n => n.toLowerCase());
+        const safetyChecks = negatedIngredients.map(neg => {
+          const matchingItems = recommendations.filter(r => 
+            r.name.toLowerCase().includes(neg) || 
+            r.ingredients.some(ing => ing.toLowerCase().includes(neg))
+          );
+          if (matchingItems.length === 0) {
+            return `We have verified that none of our recommended selections contain **${neg}**, making them completely safe for you.`;
+          } else {
+            return `Please note that the kitchen will prepare your selection strictly without **${neg}** per your request.`;
+          }
+        });
+        body += `\n\n*🥚 Note: ${safetyChecks.join(' ')}*`;
+      }
     }
 
     // Append explanation if reasoning check passed

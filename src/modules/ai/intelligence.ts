@@ -268,6 +268,22 @@ export class RestaurantIntelligence {
     // G. Entity Extraction
     const entities = EntityExtractor.extract(adjustedQuery, menu);
 
+    // Save extracted preference filters to dynamic session preferences
+    if (entities.negations.length > 0) {
+      MemoryManager.updateDietPreferences(sessionId, { allergies: entities.negations });
+    }
+    if (entities.modifiers.includes('spicy') || adjustedQuery.includes('spicy')) {
+      const mem = MemoryManager.getMemory(sessionId);
+      mem.userPreferences.heatTolerance = 'spicy';
+      MemoryManager.saveMemory(sessionId, mem);
+    }
+    if (adjustedQuery.includes('veg')) {
+      MemoryManager.updateDietPreferences(sessionId, { vegetarian: true });
+    }
+    if (adjustedQuery.includes('vegan')) {
+      MemoryManager.updateDietPreferences(sessionId, { vegan: true });
+    }
+
     // H. Symbolic Reasoning
     let reasoningResult;
     if (recommendations.length > 0) {
@@ -306,7 +322,8 @@ Please tap **Approve Order** below to send it straight to the kitchen studio!`;
       intentProbs.map(i => i.intent),
       recommendations,
       reasoningResult,
-      customPrefixText
+      customPrefixText,
+      entities
     );
 
     // Record interaction in sliding window memory
