@@ -59,6 +59,11 @@ export default function DiningExperience() {
 
   // Geolocation Check on Mount
   const verifyLocation = () => {
+    if (tableId.toLowerCase() === 'takeaway') {
+      setGeoStatus('allowed');
+      return;
+    }
+
     if (localStorage.getItem('df_simulated_gps') === 'true') {
       setGeoStatus('allowed');
       return;
@@ -748,7 +753,7 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
           </div>
           <div>
             <h1 className="text-[13px] font-bold uppercase tracking-[0.2em]">{themeColors.name}</h1>
-            <span className="text-[9px] text-neutral-400 font-medium block uppercase tracking-wider">Table {tableId}</span>
+            <span className="text-[9px] text-neutral-400 font-medium block uppercase tracking-wider">{tableId.toLowerCase() === 'takeaway' ? 'Takeaway Mode' : `Table ${tableId}`}</span>
           </div>
         </div>
 
@@ -764,13 +769,19 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
       {/* Journey Tracker Stepper */}
       <div className="bg-white border-b border-[#ECECEC] py-3.5 px-6 md:px-12 flex justify-center">
         <div className="flex items-center justify-between w-full max-w-xl text-[9px] font-bold uppercase tracking-wider text-neutral-400">
-          {[
+          {(tableId.toLowerCase() === 'takeaway' ? [
+            { id: 'Arrival', label: 'Cart' },
+            { id: 'Ordering', label: 'Cooking' },
+            { id: 'Waiting', label: 'QC Check' },
+            { id: 'Dining', label: 'Dispatch' },
+            { id: 'Leaving', label: 'Complete' }
+          ] : [
             { id: 'Arrival', label: 'Arrival' },
             { id: 'Ordering', label: 'Ordering' },
             { id: 'Waiting', label: 'Waiting' },
             { id: 'Dining', label: 'Savoring' },
             { id: 'Leaving', label: 'Departure' }
-          ].map((stage, idx, arr) => {
+          ]).map((stage, idx, arr) => {
             const isCurrent = diningStage === stage.id;
             return (
               <React.Fragment key={stage.id}>
@@ -933,30 +944,48 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
                       <Sparkles className="w-4 h-4 text-amber-500" />
                       <span>Order Dessert</span>
                     </button>
-                    <button
-                      onClick={() => sendRunnerAlert('Coffee Requested', `Table ${tableId} requested coffee.`)}
-                      className="p-3.5 border border-[#ECECEC] hover:border-neutral-950 bg-white hover:bg-[#FAFAFA] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all text-neutral-700 flex flex-col items-center gap-1.5 cursor-pointer text-center"
-                    >
-                      <Clock className="w-4 h-4 text-amber-600" />
-                      <span>Request Coffee</span>
-                    </button>
-                    <button
-                      onClick={() => sendRunnerAlert('Water Requested', `Table ${tableId} requested mineral water.`)}
-                      className="p-3.5 border border-[#ECECEC] hover:border-neutral-950 bg-white hover:bg-[#FAFAFA] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all text-neutral-700 flex flex-col items-center gap-1.5 cursor-pointer text-center"
-                    >
-                      <MapPin className="w-4 h-4 text-sky-500" />
-                      <span>Request Water</span>
-                    </button>
+                    {tableId.toLowerCase() === 'takeaway' ? (
+                      <div className="p-3.5 border border-[#ECECEC] bg-[#FAFAFA] rounded-2xl text-[11px] text-neutral-700 flex flex-col items-center justify-center gap-1.5 text-center col-span-2">
+                        <Clock className="w-4.5 h-4.5 text-amber-500" />
+                        <div>
+                          <span className="font-bold block uppercase text-[8px] text-neutral-400 tracking-wider">Takeaway Detail</span>
+                          <span className="text-[11px] font-semibold text-neutral-900 mt-0.5">
+                            {typeof window !== 'undefined' && localStorage.getItem('df_takeaway_type') === 'pickup'
+                              ? `Pickup: ${localStorage.getItem('df_takeaway_detail') || '15:00'}`
+                              : `Deliver to: ${localStorage.getItem('df_takeaway_detail') || 'Saved Address'}`}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => sendRunnerAlert('Coffee Requested', `Table ${tableId} requested coffee.`)}
+                          className="p-3.5 border border-[#ECECEC] hover:border-neutral-950 bg-white hover:bg-[#FAFAFA] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all text-neutral-700 flex flex-col items-center gap-1.5 cursor-pointer text-center"
+                        >
+                          <Clock className="w-4 h-4 text-amber-600" />
+                          <span>Request Coffee</span>
+                        </button>
+                        <button
+                          onClick={() => sendRunnerAlert('Water Requested', `Table ${tableId} requested mineral water.`)}
+                          className="p-3.5 border border-[#ECECEC] hover:border-neutral-950 bg-white hover:bg-[#FAFAFA] rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all text-neutral-700 flex flex-col items-center gap-1.5 cursor-pointer text-center"
+                        >
+                          <MapPin className="w-4 h-4 text-sky-500" />
+                          <span>Request Water</span>
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   <div className="space-y-2.5 pt-4 border-t border-[#ECECEC]">
-                    <button
-                      onClick={() => sendRunnerAlert('Runner Assistance', `Table ${tableId} is calling a runner.`)}
-                      className="w-full py-3.5 bg-[#FAFAFA] hover:bg-neutral-100 border border-[#ECECEC] text-neutral-800 rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                    >
-                      <Bell className="w-4 h-4 text-neutral-500" />
-                      Call Runner
-                    </button>
+                    {tableId.toLowerCase() !== 'takeaway' && (
+                      <button
+                        onClick={() => sendRunnerAlert('Runner Assistance', `Table ${tableId} is calling a runner.`)}
+                        className="w-full py-3.5 bg-[#FAFAFA] hover:bg-neutral-100 border border-[#ECECEC] text-neutral-800 rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <Bell className="w-4 h-4 text-neutral-500" />
+                        Call Runner
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         playUISound('click');

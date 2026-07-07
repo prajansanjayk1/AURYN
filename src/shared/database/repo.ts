@@ -384,13 +384,17 @@ export class RestaurantRepository {
 
   public static async createSession(tableId: string, ownerId: string, ownerName: string): Promise<DiningSession> {
     await this.ensureSeeded();
-    const table = await this.getTable(tableId);
-    if (!table) throw new Error(`Table ${tableId} not found`);
+    const isTakeaway = tableId.toLowerCase() === 'takeaway';
 
-    if (table.status !== 'available') {
-      const sessions = await this.getSessions();
-      const activeSession = sessions.find(s => s.tableId === tableId && s.status !== 'completed');
-      if (activeSession) return activeSession;
+    if (!isTakeaway) {
+      const table = await this.getTable(tableId);
+      if (!table) throw new Error(`Table ${tableId} not found`);
+
+      if (table.status !== 'available') {
+        const sessions = await this.getSessions();
+        const activeSession = sessions.find(s => s.tableId === tableId && s.status !== 'completed');
+        if (activeSession) return activeSession;
+      }
     }
 
     const sessionId = `session-${Date.now()}`;
@@ -407,7 +411,9 @@ export class RestaurantRepository {
         {
           timestamp: new Date().toISOString(),
           type: 'session.created',
-          description: `Dining Session created by ${ownerName}.`
+          description: isTakeaway 
+            ? `Takeaway Session initialized by ${ownerName}.`
+            : `Dining Session created by ${ownerName}.`
         }
       ]
     };
@@ -426,8 +432,12 @@ export class RestaurantRepository {
       branch_id: BRANCH_ID
     });
 
-    await this.updateTable(tableId, { status: 'occupied', currentSessionId: sessionId });
-    await this.writeAuditLog('session.created', `Session ${sessionId} created at Table ${tableId} by ${ownerName}`, ownerId);
+    if (!isTakeaway) {
+      await this.updateTable(tableId, { status: 'occupied', currentSessionId: sessionId });
+      await this.writeAuditLog('session.created', `Session ${sessionId} created at Table ${tableId} by ${ownerName}`, ownerId);
+    } else {
+      await this.writeAuditLog('session.created', `Takeaway Session ${sessionId} created by ${ownerName}`, ownerId);
+    }
     return newSession;
   }
 

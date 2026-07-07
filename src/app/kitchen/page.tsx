@@ -225,7 +225,7 @@ export default function KitchenStudio() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Table {order.tableId}</span>
+                    <span className={`text-[11px] font-bold uppercase tracking-wide ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
                     <h3 className="text-[14px] font-bold text-neutral-900 mt-0.5">Order #{order.id.slice(-4)}</h3>
                   </div>
                 </div>
@@ -275,7 +275,7 @@ export default function KitchenStudio() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Table {order.tableId}</span>
+                    <span className={`text-[11px] font-bold uppercase tracking-wide ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
                     <h3 className="text-[14px] font-bold text-neutral-900 mt-0.5">Order #{order.id.slice(-4)}</h3>
                   </div>
                 </div>
@@ -361,7 +361,7 @@ export default function KitchenStudio() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Table {order.tableId}</span>
+                    <span className={`text-[11px] font-bold uppercase tracking-wide ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
                     <h3 className="text-[14px] font-bold text-neutral-900 mt-0.5">Order #{order.id.slice(-4)}</h3>
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export default function KitchenStudio() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wide">Table {order.tableId}</span>
+                    <span className={`text-[11px] font-bold uppercase tracking-wide ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
                     <h3 className="text-[14px] font-bold text-neutral-900 mt-0.5">Order #{order.id.slice(-4)}</h3>
                   </div>
                   <span className={`px-2 py-0.5 border rounded text-[9px] font-bold tracking-wide uppercase ${
@@ -489,7 +489,7 @@ export default function KitchenStudio() {
               >
                 <div className="flex justify-between items-center text-[12px]">
                   <div>
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase">Table {order.tableId}</span>
+                    <span className={`text-[10px] font-bold uppercase ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
                     <h4 className="font-bold text-neutral-900">Order #{order.id.slice(-4)}</h4>
                   </div>
                   <span className="text-[10px] text-neutral-400">
