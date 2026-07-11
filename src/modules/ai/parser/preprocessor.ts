@@ -16,21 +16,21 @@ const EMOJI_MAP: Record<string, string> = {
 };
 
 const SYNONYM_MAP: Record<string, string[]> = {
-  'burger': ['slider', 'hamburger', 'beef burger', 'cheeseburger'],
-  'pizza': ['pie', 'sourdough', 'burrata pizza'],
-  'lobster': ['seafood', 'lobster tail', 'lobster bisque'],
-  'sparkler': ['drink', 'beverage', 'soda', 'nectar', 'peach drink'],
-  'cake': ['dessert', 'sweet', 'opera cake', 'pastry'],
-  'mild': ['non-spicy', 'not spicy', 'sweet'],
-  'spicy': ['hot', 'chili', 'spiciest', 'heat'],
+  'wings': ['wing', 'platter', 'feast', 'buffalo wings', 'bbq wings'],
+  'churros': ['dessert', 'sweet', 'churro'],
+  'lemonade': ['drink', 'beverage', 'soda', 'basil lemonade'],
+  'mojito': ['drink', 'beverage', 'spiced mojito'],
+  'mild': ['non-spicy', 'not spicy', 'honey garlic'],
+  'spicy': ['hot', 'chili', 'spiciest', 'heat', 'habanero', 'nashville'],
   'allergy': ['allergic', 'intolerance', 'intolerant']
 };
 
 const VOCABULARY = [
-  'wagyu', 'beef', 'sliders', 'brioche', 'bun', 'truffle', 'burrata', 'pizza',
-  'sourdough', 'lobster', 'risotto', 'saffron', 'matcha', 'pistachio', 'opera',
-  'cake', 'peach', 'thyme', 'sparkler', 'starters', 'mains', 'desserts',
-  'beverages', 'dairy', 'gluten', 'nuts', 'shellfish', 'spicy', 'mild'
+  'chicken', 'wings', 'sliders', 'brioche', 'bun', 'truffle', 'parmesan', 'fries',
+  'mozzarella', 'staves', 'platter', 'buffalo', 'honey', 'garlic', 'habanero',
+  'mango', 'chocolate', 'marshmallow', 'skillet', 'churros', 'lemonade', 'mojito',
+  'starters', 'mains', 'desserts', 'beverages', 'dairy', 'gluten', 'nuts',
+  'shellfish', 'spicy', 'mild'
 ];
 
 export class TextPreprocessor {

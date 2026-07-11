@@ -45,7 +45,7 @@ export default function PremiumReceipt({
     playUISound('click');
     // Generate simple text file blob and download it as an receipt export
     const content = `
-AURYN HOSPITALITY INTELLIGENCE
+KINGS OF WINGS GOURMET WINGS
 Receipt Number: ${receiptNumber}
 Date: ${new Date(timestamp).toLocaleString()}
 Table: ${tableName}
@@ -62,15 +62,15 @@ ${runnerName ? `Assigned Runner: ${runnerName}` : ''}
 ${amountReceived ? `Cash Received: ₹${amountReceived}` : ''}
 ${changeReturned ? `Change Returned: ₹${changeReturned}` : ''}
 ----------------------------------
-Thank you for dining at AURYN.
-Verify this statement online at verification.auryn.ai/${receiptNumber}
+Thank you for dining at Kings of Wings.
+Verify this statement online at verification.kingofwings.ai/${receiptNumber}
     `;
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `AURYN_Receipt_${receiptNumber}.txt`;
+    link.download = `Kings_of_Wings_Receipt_${receiptNumber}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -80,12 +80,12 @@ Verify this statement online at verification.auryn.ai/${receiptNumber}
     playUISound('click');
     if (navigator.share) {
       navigator.share({
-        title: 'AURYN Dining Receipt',
-        text: `My dining statement from AURYN: Receipt #${receiptNumber}`,
+        title: 'Kings of Wings Receipt',
+        text: `My dining statement from Kings of Wings: Receipt #${receiptNumber}`,
         url: window.location.href
       }).catch(console.error);
     } else {
-      alert(`Statement link ready to share: verification.auryn.ai/${receiptNumber}`);
+      alert(`Statement link ready to share: verification.kingofwings.ai/${receiptNumber}`);
     }
   };
 
@@ -97,8 +97,8 @@ Verify this statement online at verification.auryn.ai/${receiptNumber}
         <div className="w-10 h-10 bg-neutral-950 rounded-xl flex items-center justify-center mx-auto mb-2">
           <Sparkles className="w-5 h-5 text-amber-400" />
         </div>
-        <h2 className="text-[15px] font-bold uppercase tracking-[0.25em] text-neutral-950">AURYN</h2>
-        <span className="text-[10px] text-neutral-400 font-semibold tracking-wider block uppercase">Hospitality Intelligence</span>
+        <h2 className="text-[15px] font-bold uppercase tracking-[0.25em] text-neutral-950">KINGS OF WINGS</h2>
+        <span className="text-[10px] text-neutral-400 font-semibold tracking-wider block uppercase">Sovereign of Sizzle & Sauces</span>
       </div>
 
       {/* Roster detail */}
@@ -201,7 +201,7 @@ Verify this statement online at verification.auryn.ai/${receiptNumber}
 
       {/* Fine-print verification */}
       <div className="text-center text-[9px] text-neutral-400 font-light border-t border-neutral-100 pt-3">
-        <span>AURYN Verification Hash: <b>{receiptNumber.slice(0, 12)}</b></span>
+        <span>Wings Verification Hash: <b>{receiptNumber.slice(0, 12)}</b></span>
       </div>
 
     </div>

@@ -5,8 +5,8 @@ export class ResponseGenerator {
   private static luxuryAromaPrefixes = [
     "Welcome to our digital culinary studio. For your consideration this evening, ",
     "Greetings from the chef's table. To complement your culinary session, ",
-    "Welcome to the AURYN dining portal. Presenting our chef's hand-crafted selection: ",
-    "Good day. An exquisite selection has been arranged for your dining session: "
+    "Good day. An exquisite selection has been arranged for your dining session: ",
+    "Welcome to the Kings of Wings dining portal. Presenting our chef's hand-crafted selection: "
   ];
 
   private static cafePrefixes = [

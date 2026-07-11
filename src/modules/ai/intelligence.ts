@@ -378,12 +378,12 @@ Please tap **Approve Order** below to send it straight to the kitchen studio!`;
         return duration > 15;
       });
 
-      return `=== AURYN STANDALONE TELEMETRY REPORT: OPERATIONAL DELAYS ===
+      return `=== Kings of Wings STANDALONE TELEMETRY REPORT: OPERATIONAL DELAYS ===
 • **Active Preparation Load**: ${pendingOrders.length} orders currently active.
 • **Delayed Orders (>15 mins)**: ${delayedOrders.length} tickets are currently exceeding limits.
 • **Kitchen Load Index**: ${Math.min(100, Math.round(10 + pendingOrders.length * 15))}% capacity utilization.
 • **Runner Fleet Status**: Dispatches are active. Average table delivery lag is currently ${delayedOrders.length > 1 ? '7.5' : '2.1'} minutes.
-• **Actionable Advice**: Recommend holding off on promoting complex mains like Saffron Lobster Risotto, and redirecting prep runners to support the starter grilling lines.`;
+• **Actionable Advice**: Recommend holding off on promoting complex platters like The Monarch Platter, and redirecting prep runners to support the starter grilling lines.`;
     }
 
     else if (isSales) {
@@ -392,32 +392,32 @@ Please tap **Approve Order** below to send it straight to the kitchen studio!`;
         itemCounts[i.name] = (itemCounts[i.name] || 0) + i.quantity;
       }));
       const topSelling = Object.entries(itemCounts).sort((a,b) => b[1] - a[1])[0];
-      const topSellingName = topSelling ? `${topSelling[0]} (${topSelling[1]} sold)` : 'Wagyu Beef Sliders';
+      const topSellingName = topSelling ? `${topSelling[0]} (${topSelling[1]} sold)` : 'Classic Buffalo Wings';
 
-      return `=== AURYN STANDALONE TELEMETRY REPORT: REVENUE & SALES ===
+      return `=== Kings of Wings STANDALONE TELEMETRY REPORT: REVENUE & SALES ===
 • **Total Recorded Sales**: ₹${totalRevenue.toLocaleString()} INR (delivered order values).
 • **Table Turnover Velocity**: Average dining session duration is **${avgDiningMin} minutes**.
 • **Active Covers**: ${activeSessions.length} active dining sessions currently synchronizing.
 • **Star Performer Dish**: ${topSellingName}.
-• **Market Insight**: Sourdough-based pizzas and Wagyu sliders represent 68% of today's gross receipts. Average ticket size is stable at ₹1,450 per session.`;
+• **Market Insight**: Gourmet wings and Nashville sliders represent 68% of today's gross receipts. Average ticket size is stable at ₹950 per session.`;
     }
 
     else if (isMarketing) {
       const lowStockItems = state.inventory.filter(i => i.stock < i.minStock);
       const highStockItems = state.inventory.filter(i => i.stock >= i.minStock * 2);
 
-      let suggestion = 'Promote the Truffle Burrata Pizza';
-      if (highStockItems.some(i => i.name.includes('Beef'))) {
-        suggestion = 'Advertise Charcoal Wagyu Beef Sliders to guest concierges';
-      } else if (highStockItems.some(i => i.name.includes('Peach'))) {
-        suggestion = 'Push Peach Thyme Sparklers as a starter pairing';
+      let suggestion = 'Promote the Classic Buffalo Wings';
+      if (highStockItems.some(i => i.name.includes('Wings'))) {
+        suggestion = 'Advertise Classic Buffalo Wings to guest concierges';
+      } else if (highStockItems.some(i => i.name.includes('Mangoes'))) {
+        suggestion = 'Push Spiced Mango Mojito as a starter pairing';
       }
 
-      return `=== AURYN STANDALONE TELEMETRY REPORT: INVENTORY & MARKETING ===
+      return `=== Kings of Wings STANDALONE TELEMETRY REPORT: INVENTORY & MARKETING ===
 • **Critical Alerts**: ${lowStockItems.length} ingredients running below safety thresholds (${lowStockItems.map(i => i.name).join(', ') || 'None'}).
 • **Surplus Stock**: Buffer ingredients are high for: ${highStockItems.map(i => i.name).join(', ') || 'Standard levels'}.
 • **Recommended Campaign**: ${suggestion}.
-• **Promo Trigger**: Broadcast a 10% happy hour coupon to all active table sessions (code: **AURYN10**) to utilize high stock buffer ingredients before shift end.`;
+• **Promo Trigger**: Broadcast a 10% happy hour coupon to all active table sessions (code: **WINGS10**) to utilize high stock buffer ingredients before shift end.`;
     }
 
     else if (isStaff) {
@@ -427,7 +427,7 @@ Please tap **Approve Order** below to send it straight to the kitchen studio!`;
       });
       const topRunner = Object.entries(runners).sort((a,b) => b[1] - a[1])[0];
 
-      return `=== AURYN STANDALONE TELEMETRY REPORT: STAFF LOGISTICS ===
+      return `=== Kings of Wings STANDALONE TELEMETRY REPORT: STAFF LOGISTICS ===
 • **Active Runners**: ${Object.keys(runners).length || 2} staff dispatched.
 • **Top Performer**: ${topRunner ? `${topRunner[0]} (${topRunner[1]} dispatches completed)` : 'Runner-01'}.
 • **Routing Optimization**: Dispatched steps are mapped using coordinate distance vectors. Average food delivery transition takes under 95 seconds from prep checkout.`;
@@ -437,14 +437,14 @@ Please tap **Approve Order** below to send it straight to the kitchen studio!`;
       const hours = new Date().getHours();
       const peakMessage = (hours >= 19 && hours <= 21) ? 'Current peak in progress.' : 'Next peak expected between 7:30 PM and 9:00 PM.';
 
-      return `=== AURYN STANDALONE TELEMETRY REPORT: PREDICTIVE DEMAND ===
+      return `=== Kings of Wings STANDALONE TELEMETRY REPORT: PREDICTIVE DEMAND ===
 • **Forecast Peak**: ${peakMessage}
 • **Tomorrow\'s Coverage**: Predicting 14 completed table dining sessions and 8 takeaway checkouts.
-• **Target Ingredient Defrosting**: Ensure 4.5 kg A5 Wagyu is prepared in the cooling grid by 10:00 AM tomorrow.
-• **Beverage Demand**: Highly correlated to weather conditions. Warm weather forecasts indicate a 25% surge in Sparkler mocktails.`;
+• **Target Ingredient Defrosting**: Ensure 15 kg of Chicken Wings are prepared in the cooling grid by 10:00 AM tomorrow.
+• **Beverage Demand**: Highly correlated to weather conditions. Warm weather forecasts indicate a 25% surge in Blueberry Basil Lemonade.`;
     }
 
-    return `=== AURYN EXECUTIVE INTELLIGENCE COMMAND ===
+    return `=== Kings of Wings EXECUTIVE INTELLIGENCE COMMAND ===
 Welcome back. I am your standalone operations advisor. I analyze your live database state directly.
 
 Try asking me:

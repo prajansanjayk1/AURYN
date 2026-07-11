@@ -8,38 +8,38 @@ export class VectorEngine {
 
   // Keyword mappings for our 32-dimension projection space
   private static featureKeywords: Record<number, string[]> = {
-    0: ['starter', 'appetizer', 'slider', 'gyoza', 'snack', 'bite', 'first'], // Starters
-    1: ['main', 'pizza', 'risotto', 'soup', 'bisque', 'plate', 'dinner'],    // Mains
-    2: ['dessert', 'cake', 'sweet', 'sugar', 'ganache', 'kulfi', 'pastry'], // Desserts
-    3: ['beverage', 'drink', 'sparkler', 'soda', 'nectar', 'peach', 'iced'], // Beverages
-    4: ['truffle', 'aioli', 'shaving'],                                       // Truffle
-    5: ['burrata', 'cheese', 'gruyere', 'dairy', 'milk', 'butter'],           // Cheese/Dairy
-    6: ['beef', 'wagyu', 'patty', 'meat'],                                    // Beef/Meat
-    7: ['lobster', 'shellfish', 'seafood', 'tail'],                           // Lobster/Shellfish
-    8: ['matcha', 'tea', 'uji'],                                              // Matcha
-    9: ['peach', 'fruit', 'thyme', 'botanical'],                              // Fruity
-    10: ['spicy', 'hot', 'chili', 'heat', 'spiciest'],                        // Spicy
-    11: ['sweet', 'sugar', 'dessert', 'glaze', 'honey'],                      // Sweet profile
-    12: ['savory', 'salty', 'truffle', 'gruyere', 'beef', 'garlic'],          // Savory profile
-    13: ['sour', 'lime', 'citrus', 'splash'],                                 // Sour profile
-    14: ['protein', 'meat', 'beef', 'lobster', 'wagyu', 'egg'],               // High protein
-    15: ['calorie', 'diet', 'light', 'healthy', 'peach', 'sparkler'],         // Low calorie
-    16: ['expensive', 'luxury', 'premium', 'high-end', 'wagyu', 'lobster'],   // Premium price
-    17: ['chef', 'recommendation', 'special', 'masterpiece'],                 // Chef recommendation
-    18: ['popular', 'trending', 'star', 'best', 'seller'],                    // Popularity
-    19: ['quick', 'fast', 'beverage', 'peach', 'sparkler', 'thyme'],          // Quick prep
-    20: ['gluten', 'wheat', 'sourdough', 'brioche', 'bun', 'flour'],          // Gluten allergen
-    21: ['nut', 'pistachio', 'almond', 'peanut'],                             // Nuts allergen
-    22: ['dairy', 'milk', 'cheese', 'burrata', 'gruyere', 'butter'],          // Dairy allergen
-    23: ['shellfish', 'lobster', 'shrimp', 'crab'],                           // Shellfish allergen
-    24: ['starter', 'gyoza', 'edamame', 'slider'],                            // Starter keywords
-    25: ['pizza', 'risotto', 'pasta', 'bread'],                               // Mains keywords
-    26: ['cake', 'kulfi', 'opera', 'sweet'],                                  // Desserts keywords
-    27: ['drink', 'soda', 'nectar', 'sparkler'],                              // Beverages keywords
-    28: ['budget', 'cheap', 'affordable', 'under', 'low-cost'],               // Budget friendly
-    29: ['organic', 'natural', 'fresh', 'herb', 'botanical'],                 // Healthy/Organic
-    30: ['warm', 'hot', 'baked', 'comfort', 'soup', 'pizza', 'risotto'],      // Warm profile
-    31: ['cold', 'refreshing', 'iced', 'sparkler', 'nectar']                  // Cold profile
+    0: ['starter', 'appetizer', 'fries', 'ring', 'mozzarella', 'snack', 'bite', 'first'], // Starters
+    1: ['main', 'wing', 'platter', 'slider', 'combo', 'plate', 'dinner'],                 // Mains
+    2: ['dessert', 'churros', 'sweet', 'sugar', 'marshmallow', 'chocolate', 'skillet'],   // Desserts
+    3: ['beverage', 'drink', 'lemonade', 'mojito', 'sparkler', 'iced', 'soda'],           // Beverages
+    4: ['truffle', 'pepper', 'garlic', 'parmesan', 'seasoning'],                          // Seasonings
+    5: ['cheese', 'mozzarella', 'parmesan', 'butter', 'dairy', 'milk'],                   // Cheese/Dairy
+    6: ['chicken', 'wing', 'wings', 'sliders'],                                           // Chicken/Meat
+    7: ['buffalo', 'honey', 'habanero', 'bbq', 'sauce', 'cayenne', 'spicy'],              // Sauces
+    8: ['chocolate', 'marshmallow', 'graham', 'churros', 'cinnamon'],                     // Dessert profile
+    9: ['blueberry', 'basil', 'lemon', 'mango', 'lime', 'mint'],                          // Fruits/Herbs
+    10: ['spicy', 'hot', 'chili', 'heat', 'spiciest', 'habanero', 'cayenne'],             // Spicy
+    11: ['sweet', 'sugar', 'dessert', 'glaze', 'honey'],                                  // Sweet profile
+    12: ['savory', 'salty', 'truffle', 'parmesan', 'garlic', 'buffalo'],                  // Savory profile
+    13: ['sour', 'lime', 'citrus', 'lemon', 'lemonade'],                                  // Sour profile
+    14: ['protein', 'meat', 'chicken', 'wings', 'sliders'],                               // High protein
+    15: ['calorie', 'diet', 'light', 'healthy', 'lemonade', 'mojito'],                    // Low calorie
+    16: ['expensive', 'luxury', 'premium', 'high-end', 'platter', 'feast'],               // Premium price
+    17: ['chef', 'recommendation', 'special', 'masterpiece'],                             // Chef recommendation
+    18: ['popular', 'trending', 'star', 'best', 'seller'],                                // Popularity
+    19: ['quick', 'fast', 'beverage', 'lemonade', 'fries'],                               // Quick prep
+    20: ['gluten', 'wheat', 'bread', 'brioche', 'bun', 'flour', 'churros'],               // Gluten allergen
+    21: ['nut', 'peanut', 'cashew', 'almond'],                                            // Nuts allergen
+    22: ['dairy', 'milk', 'cheese', 'mozzarella', 'parmesan', 'butter'],                  // Dairy allergen
+    23: ['shellfish', 'shrimp', 'crab', 'lobster'],                                       // Shellfish allergen
+    24: ['starter', 'fries', 'ring', 'mozzarella', 'staves'],                             // Starter keywords
+    25: ['wings', 'platter', 'sliders', 'chicken'],                                       // Mains keywords
+    26: ['churros', 'chocolate', 'skillet', 'marshmallow'],                               // Desserts keywords
+    27: ['drink', 'soda', 'lemonade', 'mojito'],                                          // Beverages keywords
+    28: ['budget', 'cheap', 'affordable', 'under', 'low-cost'],                           // Budget friendly
+    29: ['organic', 'natural', 'fresh', 'herb', 'botanical'],                             // Healthy/Organic
+    30: ['warm', 'hot', 'baked', 'cooked', 'sliders', 'skillet'],                         // Warm profile
+    31: ['cold', 'refreshing', 'iced', 'lemonade', 'mojito']                              // Cold profile
   };
 
   /**
@@ -100,12 +100,12 @@ export class VectorEngine {
     if (item.category === 'Beverages') vector[3] = 1;
 
     // Ingredient mapping
-    if (ingredients.some((i: string) => i.includes('truffle'))) vector[4] = 1;
-    if (ingredients.some((i: string) => i.includes('cheese') || i.includes('burrata') || i.includes('gruyere'))) vector[5] = 1;
-    if (ingredients.some((i: string) => i.includes('beef') || i.includes('wagyu'))) vector[6] = 1;
-    if (ingredients.some((i: string) => i.includes('lobster'))) vector[7] = 1;
-    if (ingredients.some((i: string) => i.includes('matcha') || i.includes('tea'))) vector[8] = 1;
-    if (ingredients.some((i: string) => i.includes('peach') || i.includes('thyme'))) vector[9] = 1;
+    if (ingredients.some((i: string) => i.includes('truffle') || i.includes('pepper') || i.includes('garlic'))) vector[4] = 1;
+    if (ingredients.some((i: string) => i.includes('cheese') || i.includes('mozzarella') || i.includes('parmigiano') || i.includes('butter'))) vector[5] = 1;
+    if (ingredients.some((i: string) => i.includes('chicken') || i.includes('wing'))) vector[6] = 1;
+    if (ingredients.some((i: string) => i.includes('buffalo') || i.includes('sauce') || i.includes('habanero') || i.includes('cayenne'))) vector[7] = 1;
+    if (ingredients.some((i: string) => i.includes('chocolate') || i.includes('marshmallow'))) vector[8] = 1;
+    if (ingredients.some((i: string) => i.includes('blueberry') || i.includes('lemon') || i.includes('mango') || i.includes('lime'))) vector[9] = 1;
 
     // Profiles
     if (descLower.includes('spicy') || nameLower.includes('chili')) vector[10] = 1;

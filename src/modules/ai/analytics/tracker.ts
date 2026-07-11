@@ -69,7 +69,7 @@ export class AnalyticsTracker {
    */
   public static getBriefing(): string {
     const report = this.getMetricsReport();
-    return `=== AURYN STANDALONE TELEMETRY METRICS ===
+    return `=== Kings of Wings STANDALONE TELEMETRY METRICS ===
 • Total Queries Evaluated: ${this.totalQueries}
 • Last Retrieval Latency: ${report.retrievalLatencyMs} ms
 • Last Reasoning Latency: ${report.reasoningLatencyMs} ms

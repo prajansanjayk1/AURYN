@@ -20,6 +20,27 @@ export default function ServiceConsole() {
   // Cash payment calculator states
   const [activeCashSession, setActiveCashSession] = useState<DiningSession | null>(null);
   const [amountReceived, setAmountReceived] = useState<string>('');
+
+  const getGroupedTables = (ordersList: Order[]) => {
+    const groups: { [tableId: string]: Order[] } = {};
+    ordersList.forEach(order => {
+      if (!groups[order.tableId]) {
+        groups[order.tableId] = [];
+      }
+      groups[order.tableId].push(order);
+    });
+    
+    return Object.entries(groups).sort(([a], [b]) => {
+      if (a.toLowerCase() === 'takeaway') return 1;
+      if (b.toLowerCase() === 'takeaway') return -1;
+      const aNum = parseInt(a, 10);
+      const bNum = parseInt(b, 10);
+      if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+      if (!isNaN(aNum)) return -1;
+      if (!isNaN(bNum)) return 1;
+      return a.localeCompare(b);
+    });
+  };
   
   // Real-time Supabase Listeners
   useEffect(() => {
@@ -59,6 +80,11 @@ export default function ServiceConsole() {
 
     fetchInitialData();
 
+    // 2-second auto-refresh interval
+    const refreshInterval = setInterval(() => {
+      fetchInitialData();
+    }, 2000);
+
     // Subscribe to Supabase Realtime updates
     const channel = supabase.channel('runner-telemetry-channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async () => {
@@ -96,6 +122,7 @@ export default function ServiceConsole() {
       .subscribe();
 
     return () => {
+      clearInterval(refreshInterval);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -128,6 +155,39 @@ export default function ServiceConsole() {
         }
       ];
       await supabase.from('sessions').update({ timeline: updatedTimeline }).eq('id', targetOrder.sessionId);
+
+      playUISound('runner_assigned');
+    } catch (e) {
+      console.error(e);
+      playUISound('error');
+    }
+  };
+
+  const handleStartTableDelivery = async (tableId: string, tableOrders: Order[]) => {
+    playUISound('click');
+    try {
+      const readyOrders = orders.filter(o => o.status === 'ready');
+      const routeInfo = RestaurantIntelligence.calculateOptimalRoute(tableId, readyOrders);
+
+      for (const order of tableOrders) {
+        await supabase.from('orders').update({
+          status: 'delivering',
+          runner_id: runnerId,
+          runner_route: routeInfo.path,
+          updated_at: new Date().toISOString()
+        }).eq('id', order.id);
+
+        const activeSess = sessions.find(s => s.id === order.sessionId);
+        const updatedTimeline = [
+          ...(activeSess?.timeline || []),
+          {
+            timestamp: new Date().toISOString(),
+            type: 'order.delivering',
+            description: `Food Runner ${runnerId} assigned to deliver Order ${order.id.slice(-4)}.`
+          }
+        ];
+        await supabase.from('sessions').update({ timeline: updatedTimeline }).eq('id', order.sessionId);
+      }
 
       playUISound('runner_assigned');
     } catch (e) {
@@ -286,7 +346,7 @@ export default function ServiceConsole() {
           <div className="flex items-center gap-2">
             <Smartphone className="w-4.5 h-4.5 text-neutral-950" />
             <div>
-              <h1 className="text-[13px] font-bold uppercase tracking-wider text-neutral-950">AURYN Runner</h1>
+              <h1 className="text-[13px] font-bold uppercase tracking-wider text-neutral-955">Wings Runner</h1>
               <span className="text-[10px] text-neutral-400 font-semibold block uppercase tracking-wider">Device ID: {runnerId}</span>
             </div>
           </div>
@@ -371,7 +431,7 @@ export default function ServiceConsole() {
                 {/* Optimised Path */}
                 {order.runnerRoute && order.runnerRoute.length > 0 && (
                   <div className="bg-white/5 border border-white/10 p-3 rounded-xl space-y-1.5 text-[11px]">
-                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">AURYN Vector Path</span>
+                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest block">Wings Vector Path</span>
                     <div className="flex items-center flex-wrap gap-1 font-semibold text-neutral-300">
                       {order.runnerRoute.map((node, idx) => (
                         <React.Fragment key={idx}>
@@ -402,38 +462,52 @@ export default function ServiceConsole() {
 
           {/* Dispatch Queue (Ready orders) */}
           <div className="space-y-4">
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block">Ready for Dispatch ({dispatchQueue.length})</span>
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block">Ready for Dispatch ({dispatchQueue.length} tickets)</span>
             <div className="space-y-3">
-              {dispatchQueue.map(order => (
-                <div key={order.id} className="bg-white border border-[#ECECEC] p-5 rounded-[20px] shadow-sm space-y-4">
+              {getGroupedTables(dispatchQueue).map(([tableId, tableOrders]) => (
+                <div key={tableId} className="bg-white border border-[#ECECEC] p-5 rounded-[20px] shadow-sm space-y-4">
                   <div className="flex justify-between items-start">
                     <div>
                       <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wide">Ready at Hot Station</span>
-                      <h3 className="text-md font-bold text-neutral-900 mt-0.5">Table {order.tableId}</h3>
-                      <span className="text-[9px] text-neutral-450 font-mono">Order: {order.id.slice(-4)}</span>
+                      <h3 className="text-md font-bold text-neutral-900 mt-0.5">
+                        {tableId.toLowerCase() === 'takeaway' ? 'Takeaway Orders' : `Table ${tableId}`}
+                      </h3>
+                      <span className="text-[9px] text-neutral-450 mt-0.5 block">{tableOrders.length} {tableOrders.length === 1 ? 'Order' : 'Orders'} ready</span>
                     </div>
                     <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded text-[9px] font-bold uppercase tracking-wider">
                       Hot Deck
                     </span>
                   </div>
 
-                  <div className="space-y-1.5 border-t border-neutral-55 pt-3">
-                    {order.items.map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-[12px] text-neutral-600">
-                        <span>{item.quantity}x {item.name}</span>
+                  <div className="space-y-4 border-t border-neutral-100 pt-3 divide-y divide-neutral-50">
+                    {tableOrders.map(order => (
+                      <div key={order.id} className="pt-3 first:pt-0">
+                        <span className="text-[9px] font-bold text-[#FF5A09] uppercase tracking-wider block mb-1">Order #{order.id.slice(-4)}</span>
+                        <div className="space-y-1">
+                          {order.items.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-[12px] text-neutral-600">
+                              <span>{item.quantity}x {item.name}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
 
                   <button
-                    onClick={() => handleStartDelivery(order.id)}
+                    onClick={() => handleStartTableDelivery(tableId, tableOrders)}
                     className="w-full py-2.5 bg-neutral-950 hover:bg-neutral-900 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
                   >
                     <Navigation className="w-3.5 h-3.5" />
-                    Accept & Dispatch
+                    Accept & Dispatch All
                   </button>
                 </div>
               ))}
+              {dispatchQueue.length === 0 && (
+                <div className="border border-dashed border-[#ECECEC] rounded-[20px] p-8 text-center text-neutral-400 text-[12px] font-light">
+                  Awaiting dispatch items.
+                </div>
+              )}
             </div>
           </div>
 

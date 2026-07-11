@@ -35,9 +35,9 @@ export default function DiningExperience() {
 
   // Customizer styling state (fallback colors)
   const [themeColors, setThemeColors] = useState({
-    name: 'AURYN',
-    primary: '#0A0A0A',
-    accent: '#D4AF37'
+    name: 'Kings of Wings',
+    primary: '#0B0C10',
+    accent: '#FF5A09'
   });
 
   // Geolocation states
@@ -114,7 +114,7 @@ export default function DiningExperience() {
       setAiMessages([
         {
           sender: 'ai',
-          text: `Welcome back, ${savedName}. I am your AURYN Intelligence concierge. Ask me for recommendations, pairings, or allergens.`
+          text: `Welcome back, ${savedName}. I am your Kings of Wings AI Concierge. Ask me for recommendations, pairings, or allergens.`
         }
       ]);
     }
@@ -287,19 +287,19 @@ export default function DiningExperience() {
           setAiMessages([
             {
               sender: 'ai',
-              text: `Welcome back, ${guestName}. AURYN Companion AI has loaded your global profile:
-• **Spice Preference**: Mild (Warm spices, low capsicum)
-• **Favorite Categories**: Starters & Desserts
-• **Dietary/Allergies**: Flagged Dairy Sensitive
+              text: `Welcome back, ${guestName}. Kings of Wings Companion AI has loaded your global profile:
+• **Spice Preference**: Medium (Sweet-spicy honey garlic & buffalo)
+• **Favorite Categories**: Gourmet Wings & Starters
+• **Dietary/Allergies**: None
 
-The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyoza** (₹490) or refreshing with a **Himalayan Peach Iced Nectar** (₹240). How may I assist you today?`
+The Chef recommends starting with our crispy **Classic Buffalo Wings** (₹480) or refreshing with a **Blueberry Basil Lemonade** (₹260). How may I assist you today?`
             }
           ]);
         } else {
           setAiMessages([
             {
               sender: 'ai',
-              text: `Good evening, ${guestName}. Welcome to **AURYN**. I am your Specialized Restaurant Intelligence Concierge. I can recommend dishes based on your preferences, coordinate wine pairings, filter for allergens, or even add items directly to your table cart. What can I assist you with today?`
+              text: `Good evening, ${guestName}. Welcome to **Kings of Wings**. I am your Specialized Restaurant Intelligence Concierge. I can recommend dishes based on your preferences, filter for allergens, or even add items directly to your table cart. What can I assist you with today?`
             }
           ]);
         }
@@ -343,6 +343,41 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
         body: JSON.stringify({ sessionId: session.id, tableId, items: itemsPayload })
       });
       if (res.ok) {
+        const data = await res.json();
+        if (data.orders && Array.isArray(data.orders)) {
+          const newOrders = data.orders.map((o: any) => ({
+            id: o.id,
+            sessionId: o.sessionId,
+            tableId: o.tableId,
+            items: o.items || [],
+            status: o.status,
+            createdAt: o.createdAt,
+            updatedAt: o.updatedAt,
+            runnerId: o.runnerId,
+            runnerRoute: o.runnerRoute || [],
+            estimatedCompletion: o.estimatedCompletion,
+            confidenceScore: Number(o.confidenceScore),
+            kitchenLoad: Number(o.kitchenLoad)
+          }));
+          setOrders(prev => [...prev, ...newOrders]);
+        } else if (data.order) {
+          const o = data.order;
+          const newOrder = {
+            id: o.id,
+            sessionId: o.sessionId,
+            tableId: o.tableId,
+            items: o.items || [],
+            status: o.status,
+            createdAt: o.createdAt,
+            updatedAt: o.updatedAt,
+            runnerId: o.runnerId,
+            runnerRoute: o.runnerRoute || [],
+            estimatedCompletion: o.estimatedCompletion,
+            confidenceScore: Number(o.confidenceScore),
+            kitchenLoad: Number(o.kitchenLoad)
+          };
+          setOrders(prev => [...prev, newOrder]);
+        }
         playUISound('success');
         setDraftCart({});
       }
@@ -704,7 +739,7 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
                 className="w-4 h-4 rounded text-amber-500 bg-neutral-950 border-neutral-800 focus:ring-0 mt-0.5 cursor-pointer"
               />
               <label htmlFor="companionConsent" className="text-[10px] text-neutral-400 font-light leading-relaxed cursor-pointer select-none">
-                Enable <b>AURYN Companion AI</b> to remember my dining preferences (allergies, spice level, favorite dishes) across all AURYN partner venues.
+                Enable <b>Kings of Wings Companion AI</b> to remember my dining preferences (allergies, spice level, favorite dishes) across all partner venues.
               </label>
             </div>
 
@@ -758,7 +793,7 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
         </div>
 
         <div className="flex items-center gap-4 text-[11px] text-neutral-400 font-bold uppercase tracking-wider">
-          <div className="flex items-center gap-1.5 bg-neutral-900 border border-neutral-800 px-3 py-1 rounded-full text-[9px] text-emerald-400 font-bold tracking-widest cursor-help" title="AURYN Trust Score: 100% (Signed QR Code + Geofence Verified)">
+          <div className="flex items-center gap-1.5 bg-neutral-900 border border-neutral-800 px-3 py-1 rounded-full text-[9px] text-emerald-400 font-bold tracking-widest cursor-help" title="Kings of Wings Secure QR Code & Geofence Verified">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>SECURE NODE</span>
           </div>
@@ -915,7 +950,7 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
                     </div>
                     <h3 className="text-[18px] font-bold tracking-tight text-neutral-900 mt-3">Enjoy your meal!</h3>
                     <p className="text-[12px] text-neutral-400 font-light max-w-xs mx-auto">
-                      All your dishes have been served. AURYN is at your service.
+                      All your dishes have been served. Kings of Wings is at your service.
                     </p>
                   </div>
 
@@ -1117,7 +1152,8 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
 
           </main>
 
-          {/* Floating AI Concierge panel trigger */}
+          {/* Floating AI Concierge panel trigger - DISABLED */}
+          {false && (
           <div className="fixed bottom-6 right-6 z-40">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -1136,10 +1172,11 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
               )}
             </motion.button>
           </div>
+          )}
 
           {/* Floating AI Concierge expanded body */}
           <AnimatePresence>
-            {aiOpen && (
+            {false && aiOpen && (
               <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1151,7 +1188,7 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400" />
                     <div>
-                      <h4 className="text-[13px] font-bold tracking-tight">AURYN Specialized Intelligence</h4>
+                      <h4 className="text-[13px] font-bold tracking-tight">Kings of Wings AI Concierge</h4>
                       <span className="text-[9px] text-neutral-400 font-light block">Dining Concierge active</span>
                     </div>
                   </div>
@@ -1284,7 +1321,7 @@ The Chef recommends starting with our delicate, pan-seared **Edamame Truffle Gyo
                     <DollarSign className="w-5 h-5 text-neutral-900" />
                   </div>
                   <div>
-                    <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-[0.25em]">AURYN Checkout</span>
+                    <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-[0.25em]">Wings Checkout</span>
                     <h3 className="text-lg font-bold text-neutral-955 mt-1">Table {tableId} Statement</h3>
                     <p className="text-[12px] text-neutral-500 mt-2 font-light leading-relaxed">
                       Please choose your checkout method.

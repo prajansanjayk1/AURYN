@@ -128,17 +128,17 @@ function LoginForm() {
       
       {/* Dynamic Ambient Background Blur */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-[20%] left-[30%] w-72 h-72 rounded-full bg-amber-500/20 blur-[120px]" />
+        <div className="absolute top-[20%] left-[30%] w-72 h-72 rounded-full bg-[#FF5A09]/20 blur-[120px]" />
         <div className="absolute bottom-[20%] right-[30%] w-96 h-96 rounded-full bg-neutral-500/10 blur-[150px]" />
       </div>
 
       {/* Brand Icon */}
       <div className="mb-8 flex flex-col items-center z-10">
         <div className="w-14 h-14 bg-neutral-900 border border-neutral-800/80 rounded-2xl flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.8)] backdrop-blur-md">
-          <Sparkles className="w-6 h-6 text-amber-400" />
+          <Sparkles className="w-6 h-6 text-[#FF5A09]" />
         </div>
-        <h2 className="text-[14px] font-bold text-neutral-400 uppercase tracking-[0.3em] mt-5">AURYN</h2>
-        <span className="text-[9px] font-medium text-amber-500/80 uppercase tracking-widest mt-1">Hospitality Intelligence</span>
+        <h2 className="text-[14px] font-bold text-neutral-400 uppercase tracking-[0.3em] mt-5">Kings of Wings</h2>
+        <span className="text-[9px] font-medium text-[#FF5A09]/80 uppercase tracking-widest mt-1">Sovereign of Sizzle & Sauces</span>
       </div>
 
       {/* Login Card */}

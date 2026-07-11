@@ -111,18 +111,18 @@ export default function RestaurantLanding() {
   return (
     <main className="min-h-screen bg-[#000] text-white flex flex-col justify-between p-6 md:p-12 relative overflow-hidden font-sans selection:bg-neutral-800">
       {/* Immersive background glows (The High Joint Style) */}
-      <div className="absolute top-[10%] left-[20%] w-[350px] h-[350px] rounded-full bg-amber-500/10 blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[10%] w-[450px] h-[450px] rounded-full bg-amber-600/5 blur-[150px] pointer-events-none" />
+      <div className="absolute top-[10%] left-[20%] w-[350px] h-[350px] rounded-full bg-[#FF5A09]/10 blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[10%] w-[450px] h-[450px] rounded-full bg-[#FF5A09]/5 blur-[150px] pointer-events-none" />
 
       {/* Top Header Section */}
       <div className="w-full max-w-6xl mx-auto flex justify-between items-center z-10">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-neutral-900 border border-neutral-800 rounded-xl flex items-center justify-center shadow-lg">
-            <Sparkles className="w-5 h-5 text-amber-500" />
+            <Sparkles className="w-5 h-5 text-[#FF5A09]" />
           </div>
           <div>
-            <span className="text-[14px] font-bold uppercase tracking-[0.25em] text-white block">AURYN</span>
-            <span className="text-[8px] font-bold text-amber-500 uppercase tracking-widest block mt-0.5">Hospitality OS v2.0</span>
+            <span className="text-[14px] font-bold uppercase tracking-[0.25em] text-white block">Kings of Wings</span>
+            <span className="text-[8px] font-bold text-[#FF5A09] uppercase tracking-widest block mt-0.5">Hospitality OS v2.0</span>
           </div>
         </div>
 
@@ -141,31 +141,31 @@ export default function RestaurantLanding() {
         
         {/* Left Column: Visual Sizzle */}
         <div className="lg:col-span-6 space-y-6 text-left">
-          <span className="px-3.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block">
-            Gourmet Craft Culinary
+          <span className="px-3.5 py-1 bg-[#FF5A09]/10 border border-[#FF5A09]/20 text-[#FF5A09] rounded-full text-[10px] font-bold uppercase tracking-wider inline-block">
+            Flame Grilled & Hand-Tossed
           </span>
           <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight uppercase leading-[0.95]">
             Stacked to <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Perfection</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF7A00] to-[#FF3D00]">Perfection</span>
           </h1>
           <p className="text-[13px] md:text-[14px] text-neutral-400 max-w-md font-light leading-relaxed">
-            Welcome to the future of gourmet dining. Scan your table QR code for instant dine-in service, or select takeaway for contact-free pickup and local delivery.
+            Welcome to the sovereign of sizzle and sauces. Scan your table QR code for instant table service, or order takeaway for rapid pickup and local delivery.
           </p>
 
           {/* Quick Info Badges */}
           <div className="grid grid-cols-2 gap-4 max-w-sm pt-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center">
-                <Clock className="w-4.5 h-4.5 text-amber-500" />
+                <Clock className="w-4.5 h-4.5 text-[#FF5A09]" />
               </div>
               <div>
                 <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wide block">Preparation</span>
-                <span className="text-[12px] font-bold text-white block">12 Mins Avg</span>
+                <span className="text-[12px] font-bold text-white block">10 Mins Avg</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center">
-                <MapPin className="w-4.5 h-4.5 text-amber-500" />
+                <MapPin className="w-4.5 h-4.5 text-[#FF5A09]" />
               </div>
               <div>
                 <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wide block">Gps Geofencing</span>
@@ -185,7 +185,7 @@ export default function RestaurantLanding() {
                 onClick={() => setOrderMode('dine-in')}
                 className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all ${
                   orderMode === 'dine-in' 
-                    ? 'bg-amber-500 text-black font-extrabold shadow-lg' 
+                    ? 'bg-[#FF5A09] text-white font-extrabold shadow-lg' 
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -195,7 +195,7 @@ export default function RestaurantLanding() {
                 onClick={() => setOrderMode('takeaway')}
                 className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all ${
                   orderMode === 'takeaway' 
-                    ? 'bg-amber-500 text-black font-extrabold shadow-lg' 
+                    ? 'bg-[#FF5A09] text-white font-extrabold shadow-lg' 
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -229,7 +229,7 @@ export default function RestaurantLanding() {
                       placeholder="Enter your name"
                       value={dineInName}
                       onChange={(e) => setDineInName(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white placeholder:text-neutral-650 focus:outline-none focus:border-amber-500 transition-colors"
+                      className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white placeholder:text-neutral-650 focus:outline-none focus:border-[#FF5A09] transition-colors"
                     />
                   </div>
 
@@ -238,7 +238,7 @@ export default function RestaurantLanding() {
                     <select
                       value={selectedTable}
                       onChange={(e) => setSelectedTable(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white focus:outline-none focus:border-amber-500 transition-colors cursor-pointer"
+                      className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white focus:outline-none focus:border-[#FF5A09] transition-colors cursor-pointer"
                     >
                       {Array.from({ length: 8 }, (_, i) => (
                         <option key={i+1} value={`${i+1}`} className="bg-neutral-950 text-white">Table {i+1} (Simulation QR)</option>
@@ -249,7 +249,7 @@ export default function RestaurantLanding() {
                   <button
                     type="submit"
                     disabled={verifyingDineIn}
-                    className="w-full py-4 bg-white hover:bg-neutral-100 disabled:bg-neutral-800 text-black disabled:text-neutral-500 rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-lg transition-colors mt-2"
+                    className="w-full py-4 bg-[#FF5A09] hover:bg-[#FF5A09]/90 disabled:bg-neutral-800 text-white disabled:text-neutral-500 rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-lg transition-colors mt-2"
                   >
                     {verifyingDineIn ? 'Verifying Node...' : 'Scan QR & Join Table'}
                     <ChevronRight className="w-4 h-4" />
@@ -280,7 +280,7 @@ export default function RestaurantLanding() {
                       placeholder="Enter your name"
                       value={takeawayName}
                       onChange={(e) => setTakeawayName(e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white placeholder:text-neutral-650 focus:outline-none focus:border-amber-500 transition-colors"
+                      className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white placeholder:text-neutral-650 focus:outline-none focus:border-[#FF5A09] transition-colors"
                     />
                   </div>
 
@@ -320,7 +320,7 @@ export default function RestaurantLanding() {
                         required
                         value={pickupTime}
                         onChange={(e) => setPickupTime(e.target.value)}
-                        className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white focus:outline-none focus:border-amber-500 transition-colors cursor-pointer"
+                        className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white focus:outline-none focus:border-[#FF5A09] transition-colors cursor-pointer"
                       />
                     </div>
                   ) : (
@@ -332,7 +332,7 @@ export default function RestaurantLanding() {
                         placeholder="Flat, building name, local area..."
                         value={deliveryAddress}
                         onChange={(e) => setDeliveryAddress(e.target.value)}
-                        className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white placeholder:text-neutral-650 focus:outline-none focus:border-amber-500 transition-colors"
+                        className="w-full px-4 py-3.5 rounded-xl border border-neutral-800 bg-neutral-950/70 text-[13px] text-white placeholder:text-neutral-650 focus:outline-none focus:border-[#FF5A09] transition-colors"
                       />
                     </div>
                   )}
@@ -340,7 +340,7 @@ export default function RestaurantLanding() {
                   <button
                     type="submit"
                     disabled={verifyingTakeaway}
-                    className="w-full py-4 bg-white hover:bg-neutral-100 disabled:bg-neutral-800 text-black disabled:text-neutral-500 rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-lg transition-colors mt-2"
+                    className="w-full py-4 bg-[#FF5A09] hover:bg-[#FF5A09]/90 disabled:bg-neutral-800 text-white disabled:text-neutral-500 rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-lg transition-colors mt-2"
                   >
                     {verifyingTakeaway ? 'Initializing...' : 'Start Takeaway Order'}
                     <ChevronRight className="w-4 h-4" />
@@ -378,7 +378,7 @@ export default function RestaurantLanding() {
                   { title: 'Kitchen Hot Deck', desc: 'Touch cooking monitor', href: '/kitchen', bg: 'hover:border-indigo-500' },
                   { title: 'Runner Dispatch', desc: 'Cash checkout & routing', href: '/runner', bg: 'hover:border-purple-500' },
                   { title: 'Mission Control', desc: 'Twin & menu settings', href: '/admin', bg: 'hover:border-emerald-500' },
-                  { title: 'Staff Sign In', desc: 'Secure credential login', href: '/login', bg: 'hover:border-amber-500' }
+                  { title: 'Staff Sign In', desc: 'Secure credential login', href: '/login', bg: 'hover:border-[#FF5A09]' }
                 ].map(gateway => (
                   <Link key={gateway.title} href={gateway.href}>
                     <div className={`p-4 border border-neutral-800 rounded-xl bg-neutral-950/40 text-left transition-all cursor-pointer ${gateway.bg}`}>
@@ -400,7 +400,7 @@ export default function RestaurantLanding() {
           <span>Geo-Fence Protection Active • Takeaway Bypasses Bounds</span>
         </div>
 
-        <span>© 2026 AURYN Inc. All rights reserved.</span>
+        <span>© 2026 Kings of Wings Inc. All rights reserved.</span>
       </footer>
     </main>
   );

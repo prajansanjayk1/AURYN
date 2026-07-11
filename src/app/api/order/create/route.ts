@@ -13,7 +13,6 @@ export async function POST(request: Request) {
 
     const menu = await RestaurantRepository.getMenuItems();
     const orderItems: any[] = [];
-    let totalQuantity = 0;
 
     for (const item of items) {
       const menuItem = menu.find(m => m.id === item.menuItemId);
@@ -26,24 +25,26 @@ export async function POST(request: Request) {
         quantity: item.quantity,
         price: menuItem.price
       });
-      totalQuantity += item.quantity;
     }
 
-    // AI Prediction
-    const prediction = await RestaurantIntelligence.getKitchenPrediction(totalQuantity);
+    const createdOrders: any[] = [];
 
-    // Create order
-    const order = await RestaurantRepository.createOrder(
-      sessionId,
-      tableId,
-      orderItems,
-      prediction
-    );
+    // Create a separate order ticket for each individual product type
+    for (const orderItem of orderItems) {
+      const prediction = await RestaurantIntelligence.getKitchenPrediction(orderItem.quantity);
+      
+      const order = await RestaurantRepository.createOrder(
+        sessionId,
+        tableId,
+        [orderItem],
+        prediction
+      );
 
-    // Broadcast event
-    broadcastEvent('order.created', { order });
+      broadcastEvent('order.created', { order });
+      createdOrders.push(order);
+    }
 
-    return NextResponse.json({ order });
+    return NextResponse.json({ orders: createdOrders });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

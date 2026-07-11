@@ -1,7 +1,7 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-console.log('=== Starting AURYN Development Environment ===');
+console.log('=== Starting Kings of Wings Development Environment ===');
 
 // 1. Start WebSocket Event Engine
 const wsServerPath = path.join(__dirname, 'ws-server.js');
@@ -20,14 +20,14 @@ nextProcess.on('error', (err) => {
 
 // Handle termination signals
 process.on('SIGINT', () => {
-  console.log('\nShutting down DineFlow AI services...');
+  console.log('\nShutting down Kings of Wings services...');
   wsProcess.kill();
   nextProcess.kill();
   process.exit();
 });
 
 process.on('SIGTERM', () => {
-  console.log('\nShutting down DineFlow AI services...');
+  console.log('\nShutting down Kings of Wings services...');
   wsProcess.kill();
   nextProcess.kill();
   process.exit();

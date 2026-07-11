@@ -8,86 +8,193 @@ const RESTAURANT_ID = 'auryn-hq';
 const BRANCH_ID = 'main-branch';
 
 // Default seed sets
-const seedMenuItems: Omit<MenuItem, 'id'>[] = [
+const seedMenuItems: MenuItem[] = [
   {
-    name: 'Wagyu Beef Sliders',
-    description: 'Mini brioche buns, A5 Wagyu beef patties, caramelized onions, black truffle aioli, aged Gruyère.',
-    price: 950,
+    id: 'm1',
+    name: 'Classic Buffalo Wings',
+    description: 'Crispy fried wings tossed in our signature tangy hot Buffalo sauce, served with celery sticks and house-made blue cheese dip.',
+    price: 480,
     category: 'Starters',
+    rating: 4.8,
+    isChefRecommendation: false,
+    isPopular: true,
+    isTrending: false,
+    prepTime: 10,
+    calories: 450,
+    protein: '24g',
+    allergens: ['Dairy'],
+    ingredients: ['Chicken Wings', 'Buffalo Sauce', 'Blue Cheese', 'Butter'],
+    image: '/images/buffalo_wings.jpg'
+  },
+  {
+    id: 'm2',
+    name: 'Truffle Parm Fries',
+    description: 'Double-cooked hand-cut Idaho potatoes tossed in white truffle oil, fresh rosemary, and grated aged Parmigiano-Reggiano.',
+    price: 420,
+    category: 'Starters',
+    rating: 4.8,
+    isChefRecommendation: false,
+    isPopular: true,
+    isTrending: true,
+    prepTime: 7,
+    calories: 380,
+    protein: '6g',
+    allergens: ['Dairy'],
+    ingredients: ['Potatoes', 'Truffle Oil', 'Parmigiano-Reggiano', 'Rosemary'],
+    image: '/images/truffle_fries.jpg'
+  },
+  {
+    id: 'm3',
+    name: 'Mozzarella Staves',
+    description: 'Double-breaded premium mozzarella logs infused with Italian herb crumbs, fried golden and served with warm house marinara.',
+    price: 390,
+    category: 'Starters',
+    rating: 4.7,
+    isChefRecommendation: false,
+    isPopular: false,
+    isTrending: false,
+    prepTime: 8,
+    calories: 420,
+    protein: '14g',
+    allergens: ['Gluten', 'Dairy'],
+    ingredients: ['Mozzarella Cheese', 'Breadcrumbs', 'Herbs', 'Marinara Sauce'],
+    image: '/images/mozzarella_staves.jpg'
+  },
+  {
+    id: 'm4',
+    name: 'The Monarch Platter',
+    description: 'A royal feast of 18 wings with choice of up to three signature sauces, served with double Truffle Fries, crunchy coleslaw, and three dipping sauces.',
+    price: 1250,
+    category: 'Mains',
+    rating: 4.9,
+    isChefRecommendation: true,
+    isPopular: true,
+    isTrending: true,
+    prepTime: 18,
+    calories: 1400,
+    protein: '72g',
+    allergens: ['Gluten', 'Dairy'],
+    ingredients: ['Chicken Wings', 'Buffalo Sauce', 'Honey Garlic Sauce', 'Mango Habanero Sauce', 'Potatoes', 'Coleslaw'],
+    image: '/images/monarch_platter.jpg'
+  },
+  {
+    id: 'm5',
+    name: 'Lemon Pepper Wet Wings',
+    description: 'Southern-style crispy wings tossed in warm clarified herb butter and loaded with zesty lemon pepper seasoning.',
+    price: 780,
+    category: 'Mains',
+    rating: 4.7,
+    isChefRecommendation: false,
+    isPopular: false,
+    isTrending: false,
+    prepTime: 12,
+    calories: 520,
+    protein: '48g',
+    allergens: ['Dairy'],
+    ingredients: ['Chicken Wings', 'Butter', 'Lemon Pepper Seasoning'],
+    image: '/images/lemon_pepper_wet.jpg'
+  },
+  {
+    id: 'm6',
+    name: 'Mango Habanero Wings',
+    description: 'Crispy wings coated in a sweet tropical mango glaze infused with fiery habanero peppers, finished with a fresh cilantro garnish.',
+    price: 790,
+    category: 'Mains',
     rating: 4.9,
     isChefRecommendation: true,
     isPopular: true,
     isTrending: true,
     prepTime: 12,
-    calories: 580,
-    protein: '32g',
-    allergens: ['Gluten', 'Dairy'],
-    ingredients: ['A5 Wagyu Beef', 'Brioche Buns', 'Black Truffle', 'Gruyère Cheese'],
-    image: '/images/wagyu_sliders.jpg'
+    calories: 560,
+    protein: '48g',
+    allergens: [],
+    ingredients: ['Chicken Wings', 'Alphonso Mangoes', 'Habanero Peppers', 'Cilantro'],
+    image: '/images/mango_habanero.jpg'
   },
   {
-    name: 'Truffle Burrata Pizza',
-    description: 'House-made sourdough, fresh burrata cheese, wild mushrooms, fresh black truffle shavings, micro basil.',
-    price: 1200,
+    id: 'm7',
+    name: 'Nashville Hot Sliders',
+    description: 'Two toasted brioche sliders featuring crispy chicken breasts dipped in fiery Nashville cayenne oil, sweet pickles, and vinegar cabbage slaw.',
+    price: 680,
     category: 'Mains',
     rating: 4.8,
     isChefRecommendation: false,
     isPopular: true,
-    isTrending: true,
-    prepTime: 15,
-    calories: 820,
-    protein: '22g',
+    isTrending: false,
+    prepTime: 14,
+    calories: 680,
+    protein: '32g',
     allergens: ['Gluten', 'Dairy'],
-    ingredients: ['Burrata Cheese', 'Sourdough', 'Wild Mushrooms', 'Black Truffle'],
-    image: '/images/truffle_pizza.jpg'
+    ingredients: ['Chicken Breast', 'Brioche Buns', 'Cayenne Oil', 'Pickles', 'Slaw'],
+    image: '/images/nashville_sliders.jpg'
   },
   {
-    name: 'Saffron Lobster Risotto',
-    description: 'Acquerello carnaroli rice, butter-poached Maine lobster tail, Kashmiri saffron, Parmigiano-Reggiano.',
-    price: 1850,
-    category: 'Mains',
+    id: 'm8',
+    name: 'Campfire S\'mores Skillet',
+    description: 'Rich melted milk chocolate chunks topped with toasted gooey marshmallows, served warm with crisp graham cracker sheets for dipping.',
+    price: 380,
+    category: 'Desserts',
     rating: 4.9,
     isChefRecommendation: true,
+    isPopular: true,
+    isTrending: true,
+    prepTime: 8,
+    calories: 510,
+    protein: '6g',
+    allergens: ['Gluten', 'Dairy'],
+    ingredients: ['Milk Chocolate', 'Marshmallows', 'Graham Crackers'],
+    image: '/images/smores_skillet.jpg'
+  },
+  {
+    id: 'm9',
+    name: 'Churros with Spiced Chocolate',
+    description: 'Crispy house-made churros dusted in warm cinnamon sugar, accompanied by a rich spiced dark chocolate dipping sauce.',
+    price: 340,
+    category: 'Desserts',
+    rating: 4.8,
+    isChefRecommendation: false,
     isPopular: false,
     isTrending: false,
-    prepTime: 20,
-    calories: 640,
-    protein: '28g',
-    allergens: ['Shellfish', 'Dairy'],
-    ingredients: ['Maine Lobster', 'Acquerello Rice', 'Kashmiri Saffron', 'Parmigiano-Reggiano'],
-    image: '/images/lobster_risotto.jpg'
+    prepTime: 7,
+    calories: 390,
+    protein: '4g',
+    allergens: ['Gluten', 'Dairy'],
+    ingredients: ['Flour', 'Cinnamon', 'Sugar', 'Dark Chocolate', 'Spices'],
+    image: '/images/churros_chocolate.jpg'
   },
   {
-    name: 'Matcha Pistachio Opera Cake',
-    description: 'Almond sponge cake, Uji matcha buttercream, pistachio ganache, dark chocolate glaze.',
-    price: 650,
-    category: 'Desserts',
-    rating: 4.7,
-    isChefRecommendation: false,
-    isPopular: true,
-    isTrending: false,
-    prepTime: 8,
-    calories: 420,
-    protein: '6g',
-    allergens: ['Nuts', 'Gluten', 'Dairy'],
-    ingredients: ['Uji Matcha', 'Almonds', 'Iranian Pistachios', 'Dark Chocolate'],
-    image: '/images/matcha_cake.jpg'
-  },
-  {
-    name: 'Peach Thyme Sparkler',
-    description: 'Organic white peach purée, fresh English thyme, sparkling mineral water, splash of lime juice.',
-    price: 350,
+    id: 'm10',
+    name: 'Blueberry Basil Lemonade',
+    description: 'Cold-pressed wild blueberries, sweet basil leaves, and freshly squeezed lemon juice, served over crushed ice.',
+    price: 260,
     category: 'Beverages',
-    rating: 4.6,
+    rating: 4.7,
     isChefRecommendation: false,
     isPopular: false,
     isTrending: true,
     prepTime: 4,
-    calories: 120,
+    calories: 140,
     protein: '1g',
     allergens: [],
-    ingredients: ['Organic Peaches', 'Himalayan Thyme', 'Sparkling Spring Water'],
-    image: '/images/peach.jpg'
+    ingredients: ['Blueberries', 'Basil', 'Lemon Juice', 'Sugar'],
+    image: '/images/blueberry_lemonade.jpg'
+  },
+  {
+    id: 'm11',
+    name: 'Spiced Mango Mojito',
+    description: 'Sweet Alphonso mango nectar, fresh lime juice, mint leaves, and a dash of cayenne pepper syrup, topped with club soda.',
+    price: 290,
+    category: 'Beverages',
+    rating: 4.8,
+    isChefRecommendation: true,
+    isPopular: true,
+    isTrending: false,
+    prepTime: 4,
+    calories: 160,
+    protein: '1g',
+    allergens: [],
+    ingredients: ['Alphonso Mangoes', 'Lime Juice', 'Mint Leaves', 'Cayenne Syrup', 'Club Soda'],
+    image: '/images/mango_mojito.jpg'
   }
 ];
 
@@ -100,14 +207,14 @@ const seedTables: Table[] = Array.from({ length: 8 }, (_, i) => ({
 }));
 
 const seedInventory: InventoryItem[] = [
-  { id: 'i1', name: 'Burrata Cheese', stock: 15, unit: 'units', minStock: 5, expiryDate: '2026-12-31T00:00:00.000Z' },
-  { id: 'i2', name: 'Black Truffle', stock: 0.8, unit: 'kg', minStock: 0.2, expiryDate: '2026-12-31T00:00:00.000Z' },
-  { id: 'i3', name: 'A5 Wagyu Beef', stock: 12, unit: 'kg', minStock: 3, expiryDate: '2026-12-31T00:00:00.000Z' },
-  { id: 'i4', name: 'Maine Lobster', stock: 8, unit: 'units', minStock: 2, expiryDate: '2026-12-31T00:00:00.000Z' },
-  { id: 'i5', name: 'Kashmiri Saffron', stock: 0.15, unit: 'kg', minStock: 0.05, expiryDate: '2026-12-31T00:00:00.000Z' },
-  { id: 'i6', name: 'Edamame', stock: 25, unit: 'kg', minStock: 5, expiryDate: '2026-12-31T00:00:00.000Z' },
-  { id: 'i7', name: 'Iranian Pistachios', stock: 4, unit: 'kg', minStock: 1, expiryDate: '2026-12-31T00:00:00.000Z' },
-  { id: 'i8', name: 'Organic Peaches', stock: 30, unit: 'kg', minStock: 8, expiryDate: '2026-12-31T00:00:00.000Z' }
+  { id: 'i1', name: 'Chicken Wings', stock: 80, unit: 'kg', minStock: 15, expiryDate: '2026-12-31T00:00:00.000Z' },
+  { id: 'i2', name: 'Buffalo Sauce', stock: 12, unit: 'liters', minStock: 3, expiryDate: '2026-12-31T00:00:00.000Z' },
+  { id: 'i3', name: 'Truffle Oil', stock: 3, unit: 'liters', minStock: 0.8, expiryDate: '2026-12-31T00:00:00.000Z' },
+  { id: 'i4', name: 'Brioche Buns', stock: 50, unit: 'units', minStock: 12, expiryDate: '2026-12-31T00:00:00.000Z' },
+  { id: 'i5', name: 'Mozzarella Cheese', stock: 15, unit: 'kg', minStock: 4, expiryDate: '2026-12-31T00:00:00.000Z' },
+  { id: 'i6', name: 'Potatoes', stock: 60, unit: 'kg', minStock: 12, expiryDate: '2026-12-31T00:00:00.000Z' },
+  { id: 'i7', name: 'Alphonso Mangoes', stock: 20, unit: 'kg', minStock: 5, expiryDate: '2026-12-31T00:00:00.000Z' },
+  { id: 'i8', name: 'Dark Chocolate', stock: 10, unit: 'kg', minStock: 2, expiryDate: '2026-12-31T00:00:00.000Z' }
 ];
 
 const seedUsers: User[] = [
@@ -212,6 +319,141 @@ export class RestaurantRepository {
 
       // Seed menu items
       for (const item of seedMenuItems) {
+        await supabase.from('menu_items').insert({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          category: item.category,
+          rating: item.rating,
+          is_chef_recommendation: item.isChefRecommendation,
+          is_popular: item.isPopular,
+          is_trending: item.isTrending,
+          prep_time: item.prepTime,
+          calories: item.calories,
+          protein: item.protein,
+          allergens: item.allergens,
+          ingredients: item.ingredients,
+          image: item.image,
+          restaurant_id: RESTAURANT_ID,
+          branch_id: BRANCH_ID
+        });
+      }
+
+      // Seed tables
+      for (const table of seedTables) {
+        await supabase.from('tables').insert({
+          id: table.id,
+          name: table.name,
+          qr_code: table.qrCode,
+          status: table.status,
+          current_session_id: table.currentSessionId,
+          restaurant_id: RESTAURANT_ID,
+          branch_id: BRANCH_ID
+        });
+      }
+
+      // Seed inventory
+      for (const item of seedInventory) {
+        await supabase.from('inventory').insert({
+          id: item.id,
+          name: item.name,
+          stock: item.stock,
+          unit: item.unit,
+          min_stock: item.minStock,
+          restaurant_id: RESTAURANT_ID,
+          branch_id: BRANCH_ID
+        });
+      }
+
+      // Seed users
+      for (const user of seedUsers) {
+        await supabase.from('users').insert({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          password_hash: user.passwordHash,
+          restaurant_id: RESTAURANT_ID,
+          branch_id: BRANCH_ID
+        });
+      }
+
+      // Seed settings
+      const defaultSettings = {
+        id: 'global',
+        restaurant_name: 'Kings of Wings',
+        logo_url: '',
+        primary_color: '#0B0C10',
+        accent_color: '#FF5A09',
+        typography: 'Outfit',
+        welcome_screen: { title: 'Kings of Wings', subtitle: 'The Sovereign of Sizzle & Sauces' },
+        splash_screen: { duration: 3000, text: 'Kings of Wings — Bold Flavors, Untamed Heat' },
+        background_music: 'rock_blues',
+        notification_sounds: true,
+        receipt_layout: 'classic_luxury',
+        qr_code_style: 'rounded_gold',
+        business_hours: '11:00 AM - 11:00 PM',
+        taxes: 5,
+        gst: 18,
+        currency: 'INR',
+        language: 'English',
+        dining_policies: 'Smart casual dress code. Bold flavors await.',
+        payment_options: ['Razorpay', 'Cash'],
+        ai_settings: { enableConcierge: true, recommendationIntensity: 'balanced' },
+        restaurant_id: RESTAURANT_ID,
+        branch_id: BRANCH_ID
+      };
+      await supabase.from('settings').insert(defaultSettings);
+
+      // Seed welcome notification
+      await supabase.from('notifications').insert({
+        id: 'n-welcome',
+        timestamp: new Date().toISOString(),
+        title: 'Operations Active',
+        message: 'Kings of Wings Hospitality OS initialized successfully.',
+        type: 'success',
+        read: false,
+        restaurant_id: RESTAURANT_ID,
+        branch_id: BRANCH_ID
+      });
+
+      // Seed initial audit log
+      await supabase.from('audit_logs').insert({
+        id: 'log-start',
+        timestamp: new Date().toISOString(),
+        action: 'system.start',
+        details: 'Kings of Wings database seeded with wings menu, staff, and tables.',
+        restaurant_id: RESTAURANT_ID,
+        branch_id: BRANCH_ID
+      });
+
+      console.log('[Kings of Wings DB] Supabase database seeding complete.');
+    } catch (err: any) {
+      console.error('[Kings of Wings DB] Seeding error:', err.message);
+    }
+  }
+
+  public static async forceReseed(): Promise<void> {
+    console.log('[Kings of Wings DB] Wiping database for reseed...');
+    try {
+      // 1. Delete dependent tables first to avoid foreign key violations
+      await supabase.from('orders').delete().neq('id', 'wipesystem');
+      await supabase.from('sessions').delete().neq('id', 'wipesystem');
+      await supabase.from('notifications').delete().neq('id', 'wipesystem');
+      await supabase.from('audit_logs').delete().neq('id', 'wipesystem');
+      
+      // 2. Delete parent tables
+      await supabase.from('menu_items').delete().neq('id', 'wipesystem');
+      await supabase.from('tables').delete().neq('id', 'wipesystem');
+      await supabase.from('inventory').delete().neq('id', 'wipesystem');
+      await supabase.from('users').delete().neq('id', 'wipesystem');
+      await supabase.from('settings').delete().neq('id', 'wipesystem');
+
+      console.log('[Kings of Wings DB] Wiped all tables. Seeding new Kings of Wings data...');
+      
+      // Seed menu items
+      for (const item of seedMenuItems) {
         const id = `menu-${Math.random().toString(36).substr(2, 9)}`;
         await supabase.from('menu_items').insert({
           id,
@@ -276,14 +518,14 @@ export class RestaurantRepository {
       // Seed settings
       const defaultSettings = {
         id: 'global',
-        restaurant_name: 'AURYN',
+        restaurant_name: 'Kings of Wings',
         logo_url: '',
-        primary_color: '#0A0A0A',
-        accent_color: '#D4AF37',
+        primary_color: '#0B0C10',
+        accent_color: '#FF5A09',
         typography: 'Outfit',
-        welcome_screen: { title: 'Welcome to AURYN', subtitle: 'Luxury Dining Intelligence' },
-        splash_screen: { duration: 3000, text: 'AURYN — Orchestrated Elegance' },
-        background_music: 'classical_jazz',
+        welcome_screen: { title: 'Kings of Wings', subtitle: 'The Sovereign of Sizzle & Sauces' },
+        splash_screen: { duration: 3000, text: 'Kings of Wings — Bold Flavors, Untamed Heat' },
+        background_music: 'rock_blues',
         notification_sounds: true,
         receipt_layout: 'classic_luxury',
         qr_code_style: 'rounded_gold',
@@ -292,7 +534,7 @@ export class RestaurantRepository {
         gst: 18,
         currency: 'INR',
         language: 'English',
-        dining_policies: 'Smart casual dress code. Reservation active for 90 minutes.',
+        dining_policies: 'Smart casual dress code. Bold flavors await.',
         payment_options: ['Razorpay', 'Cash'],
         ai_settings: { enableConcierge: true, recommendationIntensity: 'balanced' },
         restaurant_id: RESTAURANT_ID,
@@ -305,7 +547,7 @@ export class RestaurantRepository {
         id: 'n-welcome',
         timestamp: new Date().toISOString(),
         title: 'Operations Active',
-        message: 'AURYN Hospitality Intelligence Platform initialized successfully.',
+        message: 'Kings of Wings Hospitality OS initialized successfully.',
         type: 'success',
         read: false,
         restaurant_id: RESTAURANT_ID,
@@ -317,14 +559,15 @@ export class RestaurantRepository {
         id: 'log-start',
         timestamp: new Date().toISOString(),
         action: 'system.start',
-        details: 'AURYN database seeded with premium menu items, staff, tables, and settings.',
+        details: 'Kings of Wings database wiped and re-seeded successfully.',
         restaurant_id: RESTAURANT_ID,
         branch_id: BRANCH_ID
       });
 
-      console.log('[AURYN DB] Supabase database seeding complete.');
+      console.log('[Kings of Wings DB] Database reset and reseed complete.');
     } catch (err: any) {
-      console.error('[AURYN DB] Seeding error:', err.message);
+      console.error('[Kings of Wings DB] Reset error:', err.message);
+      throw err;
     }
   }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -40,11 +41,16 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
   final _primaryColorController = TextEditingController();
   final _accentColorController = TextEditingController();
 
+  Timer? _refreshTimer;
+
   @override
   void initState() {
     super.initState();
     _fetchManagerData();
     _subscribeToManagerData();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _fetchManagerData();
+    });
   }
 
   Future<void> _fetchManagerData() async {
@@ -505,6 +511,7 @@ class _ManagerScreenState extends ConsumerState<ManagerScreen> {
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _brandNameController.dispose();
     _primaryColorController.dispose();
     _accentColorController.dispose();

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -25,12 +26,16 @@ class _RunnerScreenState extends ConsumerState<RunnerScreen> {
   Map<String, dynamic>? _selectedCashSession;
   final _cashReceivedController = TextEditingController();
   double _cashChangeToReturn = 0.0;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _fetchRoster();
     _subscribeToRoster();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _fetchRoster();
+    });
   }
 
   Future<void> _fetchRoster() async {
@@ -83,6 +88,7 @@ class _RunnerScreenState extends ConsumerState<RunnerScreen> {
     // Runner AI routing optimization
     final readyOrders = _orders.where((o) => o['status'] == 'ready').map((o) => o['table_id'].toString()).toList();
     final runnerAi = RunnerAI(const HospitalityContext(
+      theme: null,
       weather: 'Mild',
       timeOfDay: 'Evening',
       kitchenLoad: 30,
@@ -97,6 +103,30 @@ class _RunnerScreenState extends ConsumerState<RunnerScreen> {
       'runner_route': aiResult['pathVector'],
       'updated_at': DateTime.now().toIso8601String(),
     }).eq('id', orderId);
+
+    _fetchRoster();
+  }
+
+  Future<void> _handleStartTableDelivery(String tableId, List<Map<String, dynamic>> tableOrders) async {
+    final readyTables = _orders.where((o) => o['status'] == 'ready').map((o) => o['table_id'].toString()).toList();
+    final runnerAi = RunnerAI(const HospitalityContext(
+      theme: null,
+      weather: 'Mild',
+      timeOfDay: 'Evening',
+      kitchenLoad: 30,
+      lowStockIngredients: [],
+      sessionPreferences: {},
+    ));
+    final aiResult = runnerAi.optimizeRosterRoute(tableId, readyTables);
+
+    for (final order in tableOrders) {
+      await _client.from('orders').update({
+        'status': 'delivering',
+        'runner_id': 'runner-alpha',
+        'runner_route': aiResult['pathVector'],
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', order['id']);
+    }
 
     _fetchRoster();
   }
@@ -241,27 +271,73 @@ class _RunnerScreenState extends ConsumerState<RunnerScreen> {
                       child: Center(child: Text('No orders ready for delivery', style: TextStyle(fontSize: 11, color: Colors.grey))),
                     )
                   else
-                    ...dispatchQueue.map((order) => Container(
+                    ...() {
+                      // Group dispatchQueue by table ID
+                      final Map<String, List<Map<String, dynamic>>> groups = {};
+                      for (final order in dispatchQueue) {
+                        final tid = order['table_id']?.toString() ?? 'Takeaway';
+                        if (!groups.containsKey(tid)) {
+                          groups[tid] = [];
+                        }
+                        groups[tid]!.add(order);
+                      }
+                      return groups.entries.map((entry) {
+                        final tableId = entry.key;
+                        final tableOrders = entry.value;
+                        return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           child: AurynCard(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Table ${order['table_id']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    Text('Estimated Wait: ${order['estimated_completion'] ?? '1m'}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                    Text(
+                                      tableId == 'Takeaway' ? 'Takeaway Orders' : 'Table $tableId',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                                    ),
+                                    Text(
+                                      '${tableOrders.length} ${tableOrders.length == 1 ? 'order' : 'orders'} ready',
+                                      style: TextStyle(fontSize: 10, color: theme.accentColor, fontWeight: FontWeight.bold),
+                                    ),
                                   ],
                                 ),
-                                ElevatedButton(
-                                  onPressed: () => _handleStartDelivery(order['id'], order['table_id'].toString()),
-                                  child: const Text('DISPATCH', style: TextStyle(fontSize: 10)),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Divider(color: Colors.white10, height: 1),
+                                ),
+                                ...tableOrders.map((order) {
+                                  final List items = order['items'] ?? [];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Order #${order['id'].toString().substring(order['id'].toString().length - 4)}', style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 4),
+                                        ...items.map((item) => Text(
+                                          '${item['quantity']}x ${item['name']}',
+                                          style: const TextStyle(fontSize: 12, color: Colors.white70),
+                                        )),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () => _handleStartTableDelivery(tableId, tableOrders),
+                                    child: const Text('DISPATCH ALL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                        )),
+                        );
+                      }).toList();
+                    }(),
 
                   const SizedBox(height: 24),
                   const Text(
@@ -375,6 +451,7 @@ class _RunnerScreenState extends ConsumerState<RunnerScreen> {
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _cashReceivedController.dispose();
     super.dispose();
   }

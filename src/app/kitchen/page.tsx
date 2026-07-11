@@ -15,6 +15,27 @@ export default function KitchenStudio() {
   const [loading, setLoading] = useState(true);
   const [kitchenLoad, setKitchenLoad] = useState(25); // percentage
 
+  const getGroupedTables = (ordersList: Order[]) => {
+    const groups: { [tableId: string]: Order[] } = {};
+    ordersList.forEach(order => {
+      if (!groups[order.tableId]) {
+        groups[order.tableId] = [];
+      }
+      groups[order.tableId].push(order);
+    });
+    
+    return Object.entries(groups).sort(([a], [b]) => {
+      if (a.toLowerCase() === 'takeaway') return 1;
+      if (b.toLowerCase() === 'takeaway') return -1;
+      const aNum = parseInt(a, 10);
+      const bNum = parseInt(b, 10);
+      if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+      if (!isNaN(aNum)) return -1;
+      if (!isNaN(bNum)) return 1;
+      return a.localeCompare(b);
+    });
+  };
+
   // Fetch orders from Supabase PostgreSQL
   const fetchOrders = async () => {
     try {
@@ -52,6 +73,11 @@ export default function KitchenStudio() {
   useEffect(() => {
     fetchOrders();
 
+    // 2-second auto-refresh interval
+    const refreshInterval = setInterval(() => {
+      fetchOrders();
+    }, 2000);
+
     // Subscribe to order modifications in real-time
     const channel = supabase.channel('kitchen-studio-telemetry')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
@@ -60,6 +86,7 @@ export default function KitchenStudio() {
       .subscribe();
 
     return () => {
+      clearInterval(refreshInterval);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -167,7 +194,7 @@ export default function KitchenStudio() {
             <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Back of House Operations</span>
           </div>
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-neutral-950 mt-0.5">
-            AURYN Kitchen Studio
+            Kings of Wings Hot Deck
           </h1>
         </div>
 
@@ -208,41 +235,56 @@ export default function KitchenStudio() {
           <div className="flex justify-between items-center pb-2 border-b border-[#ECECEC]">
             <div className="flex items-center gap-2">
               <span className="text-[12px] font-bold uppercase tracking-wider text-neutral-450">1. Incoming</span>
-              <span className="px-2 py-0.5 bg-neutral-950 text-white rounded text-[10px] font-bold">
+              <span className="px-2 py-0.5 bg-neutral-955 text-white rounded text-[10px] font-bold">
                 {incomingOrders.length}
               </span>
             </div>
           </div>
 
           <div className="space-y-4">
-            {incomingOrders.map(order => (
+            {getGroupedTables(incomingOrders).map(([tableId, tableOrders]) => (
               <motion.div
-                key={order.id}
+                key={tableId}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white border-2 border-dashed border-rose-200 p-5 rounded-[20px] shadow-sm space-y-4 animate-pulse"
-                style={{ animationDuration: '3.5s' }}
+                className="bg-white border-2 border-dashed border-rose-200 p-5 rounded-[20px] shadow-sm space-y-4"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className={`text-[11px] font-bold uppercase tracking-wide ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
-                    <h3 className="text-[14px] font-bold text-neutral-900 mt-0.5">Order #{order.id.slice(-4)}</h3>
+                    <span className={`text-[12px] font-bold uppercase tracking-wide ${tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-[#FF5A09]'}`}>
+                      {tableId.toLowerCase() === 'takeaway' ? 'Takeaway Hub' : `Table ${tableId}`}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">{tableOrders.length} {tableOrders.length === 1 ? 'Order' : 'Orders'} Pending</span>
                   </div>
                 </div>
 
-                <div className="space-y-2 border-t border-[#FAFAFA] pt-3">
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-[12px] text-neutral-700 font-medium">
-                      <span>{item.quantity}x {item.name}</span>
+                <div className="space-y-4 border-t border-[#FAFAFA] pt-3 divide-y divide-[#FAFAFA]">
+                  {tableOrders.map(order => (
+                    <div key={order.id} className="pt-3 first:pt-0">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[11px] font-bold text-neutral-500">Order #{order.id.slice(-4)}</span>
+                        <span className="text-[10px] text-neutral-400 font-light">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-[12px] text-neutral-700 font-medium">
+                            <span>{item.quantity}x {item.name}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
 
                 <button
-                  onClick={() => updateStatus(order.id, 'preparing')}
+                  onClick={async () => {
+                    for (const order of tableOrders) {
+                      await updateStatus(order.id, 'preparing');
+                    }
+                  }}
                   className="w-full py-2.5 bg-neutral-955 hover:bg-neutral-900 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Accept & Cook
+                  Accept All for Table
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </motion.div>
@@ -267,70 +309,73 @@ export default function KitchenStudio() {
           </div>
 
           <div className="space-y-4">
-            {preparingOrders.map(order => (
+            {getGroupedTables(preparingOrders).map(([tableId, tableOrders]) => (
               <motion.div
-                key={order.id}
+                key={tableId}
                 layout
-                className="bg-white border border-[#ECECEC] p-5 rounded-[20px] shadow-sm space-y-4 border-l-4 border-l-amber-500"
+                className="bg-white border border-[#ECECEC] p-5 rounded-[20px] shadow-sm space-y-4 border-l-4 border-l-[#FF5A09]"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className={`text-[11px] font-bold uppercase tracking-wide ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
-                    <h3 className="text-[14px] font-bold text-neutral-900 mt-0.5">Order #{order.id.slice(-4)}</h3>
+                    <span className={`text-[12px] font-bold uppercase tracking-wide ${tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-[#FF5A09]'}`}>
+                      {tableId.toLowerCase() === 'takeaway' ? 'Takeaway Hub' : `Table ${tableId}`}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">{tableOrders.length} {tableOrders.length === 1 ? 'Active Order' : 'Active Orders'}</span>
                   </div>
                 </div>
 
-                <div className="space-y-1.5 border-t border-[#FAFAFA] pt-3">
-                  {order.items.map((item, idx) => {
-                    const isReady = item.status === 'ready';
-                    return (
-                      <div 
-                        key={idx} 
-                        onClick={() => toggleItemStatus(order.id, idx)}
-                        className={`flex justify-between items-center text-[12px] p-2 rounded-lg cursor-pointer transition-colors ${
-                          isReady 
-                            ? 'bg-emerald-50/50 text-emerald-800 border border-emerald-100/50 line-through' 
-                            : 'hover:bg-neutral-50 text-neutral-700 font-medium border border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <input 
-                            type="checkbox" 
-                            checked={isReady} 
-                            readOnly 
-                            className="w-3.5 h-3.5 rounded text-neutral-900 border-neutral-300 focus:ring-0 cursor-pointer"
-                          />
-                          <span>{item.quantity}x {item.name}</span>
-                        </div>
-                        <span className={`text-[9px] font-bold uppercase tracking-wider ${
-                          isReady ? 'text-emerald-600' : 'text-neutral-400'
-                        }`}>
-                          {isReady ? 'Ready' : 'Prep'}
+                <div className="space-y-5 border-t border-[#FAFAFA] pt-3 divide-y divide-[#FAFAFA]">
+                  {tableOrders.map(order => (
+                    <div key={order.id} className="space-y-3 pt-3 first:pt-0">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-bold text-neutral-400">Order #{order.id.slice(-4)}</span>
+                        <span className="text-[10px] text-neutral-400 bg-neutral-50 px-2 py-1 rounded-md">
+                          Forecast: <b>{order.estimatedCompletion}</b> ({order.confidenceScore}%)
                         </span>
                       </div>
-                    );
-                  })}
-                </div>
 
-                {/* AI Forecast completion widgets */}
-                <div className="bg-[#FAFAFA] border border-[#ECECEC] p-3.5 rounded-xl space-y-1.5">
-                  <div className="flex justify-between text-[11px] text-neutral-400 font-light">
-                    <span>AI Forecasted Prep</span>
-                    <span className="font-bold text-neutral-700">{order.estimatedCompletion}</span>
-                  </div>
-                  <div className="flex justify-between text-[11px] text-neutral-400 font-light">
-                    <span>Confidence Score</span>
-                    <span className="font-bold text-neutral-700">{order.confidenceScore}%</span>
-                  </div>
-                </div>
+                      <div className="space-y-1.5">
+                        {order.items.map((item, idx) => {
+                          const isReady = item.status === 'ready';
+                          return (
+                            <div 
+                              key={idx} 
+                              onClick={() => toggleItemStatus(order.id, idx)}
+                              className={`flex justify-between items-center text-[12px] p-2 rounded-lg cursor-pointer transition-colors ${
+                                isReady 
+                                  ? 'bg-emerald-50/50 text-emerald-800 border border-emerald-100/50 line-through' 
+                                  : 'hover:bg-neutral-50 text-neutral-700 font-medium border border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <input 
+                                  type="checkbox" 
+                                  checked={isReady} 
+                                  readOnly 
+                                  className="w-3.5 h-3.5 rounded text-neutral-900 border-neutral-300 focus:ring-0 cursor-pointer"
+                                />
+                                <span>{item.quantity}x {item.name}</span>
+                              </div>
+                              <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                                isReady ? 'text-emerald-600' : 'text-neutral-400'
+                              }`}>
+                                {isReady ? 'Ready' : 'Prep'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
 
-                <button
-                  onClick={() => updateStatus(order.id, 'quality_check')}
-                  className="w-full py-2.5 bg-neutral-900 hover:bg-neutral-850 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <ClipboardCheck className="w-3.5 h-3.5" />
-                  Send to QC
-                </button>
+                      <button
+                        onClick={() => updateStatus(order.id, 'quality_check')}
+                        className="w-full py-2 bg-[#FF5A09] hover:bg-[#FF5A09]/90 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <ClipboardCheck className="w-3.5 h-3.5" />
+                        Send Order #{order.id.slice(-4)} to QC
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             ))}
             {preparingOrders.length === 0 && (
@@ -353,58 +398,70 @@ export default function KitchenStudio() {
           </div>
 
           <div className="space-y-4">
-            {qcOrders.map(order => (
+            {getGroupedTables(qcOrders).map(([tableId, tableOrders]) => (
               <motion.div
-                key={order.id}
+                key={tableId}
                 layout
                 className="bg-white border border-[#ECECEC] p-5 rounded-[20px] shadow-sm space-y-4 border-l-4 border-l-purple-500"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className={`text-[11px] font-bold uppercase tracking-wide ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
-                    <h3 className="text-[14px] font-bold text-neutral-900 mt-0.5">Order #{order.id.slice(-4)}</h3>
+                    <span className={`text-[12px] font-bold uppercase tracking-wide ${tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-[#FF5A09]'}`}>
+                      {tableId.toLowerCase() === 'takeaway' ? 'Takeaway Hub' : `Table ${tableId}`}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">{tableOrders.length} {tableOrders.length === 1 ? 'Order' : 'Orders'} in QC</span>
                   </div>
                 </div>
 
-                <div className="space-y-1.5 border-t border-[#FAFAFA] pt-3">
-                  {order.items.map((item, idx) => {
-                    const isReady = item.status === 'ready';
-                    return (
-                      <div 
-                        key={idx} 
-                        onClick={() => toggleItemStatus(order.id, idx)}
-                        className={`flex justify-between items-center text-[12px] p-2 rounded-lg cursor-pointer transition-colors ${
-                          isReady 
-                            ? 'bg-emerald-50/50 text-emerald-800 border border-emerald-100/50 line-through' 
-                            : 'hover:bg-neutral-50 text-neutral-700 font-medium border border-transparent'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <input 
-                            type="checkbox" 
-                            checked={isReady} 
-                            readOnly 
-                            className="w-3.5 h-3.5 rounded text-neutral-900 border-neutral-300 focus:ring-0 cursor-pointer"
-                          />
-                          <span>{item.quantity}x {item.name}</span>
-                        </div>
-                        <span className={`text-[9px] font-bold uppercase tracking-wider ${
-                          isReady ? 'text-emerald-600' : 'text-neutral-400'
-                        }`}>
-                          {isReady ? 'Ready' : 'Prep'}
-                        </span>
+                <div className="space-y-5 border-t border-[#FAFAFA] pt-3 divide-y divide-[#FAFAFA]">
+                  {tableOrders.map(order => (
+                    <div key={order.id} className="space-y-3 pt-3 first:pt-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[11px] font-bold text-neutral-400">Order #{order.id.slice(-4)}</span>
                       </div>
-                    );
-                  })}
-                </div>
 
-                <button
-                  onClick={() => updateStatus(order.id, 'ready')}
-                  className="w-full py-2.5 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  Approve & Ready
-                </button>
+                      <div className="space-y-1.5">
+                        {order.items.map((item, idx) => {
+                          const isReady = item.status === 'ready';
+                          return (
+                            <div 
+                              key={idx} 
+                              onClick={() => toggleItemStatus(order.id, idx)}
+                              className={`flex justify-between items-center text-[12px] p-2 rounded-lg cursor-pointer transition-colors ${
+                                isReady 
+                                  ? 'bg-emerald-50/50 text-emerald-800 border border-emerald-100/50 line-through' 
+                                  : 'hover:bg-neutral-50 text-neutral-700 font-medium border border-transparent'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <input 
+                                  type="checkbox" 
+                                  checked={isReady} 
+                                  readOnly 
+                                  className="w-3.5 h-3.5 rounded text-neutral-900 border-neutral-300 focus:ring-0 cursor-pointer"
+                                />
+                                <span>{item.quantity}x {item.name}</span>
+                              </div>
+                              <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                                isReady ? 'text-emerald-600' : 'text-neutral-400'
+                              }`}>
+                                {isReady ? 'Ready' : 'Prep'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => updateStatus(order.id, 'ready')}
+                        className="w-full py-2 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        Approve Order #{order.id.slice(-4)}
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             ))}
             {qcOrders.length === 0 && (
@@ -427,38 +484,50 @@ export default function KitchenStudio() {
           </div>
 
           <div className="space-y-4">
-            {readyOrders.map(order => (
+            {getGroupedTables(readyOrders).map(([tableId, tableOrders]) => (
               <motion.div
-                key={order.id}
+                key={tableId}
                 layout
-                className="bg-white border border-[#ECECEC] p-5 rounded-[20px] shadow-sm space-y-4 opacity-90 border-l-4 border-l-emerald-500"
+                className="bg-white border border-[#ECECEC] p-5 rounded-[20px] shadow-sm space-y-4 border-l-4 border-l-emerald-500"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className={`text-[11px] font-bold uppercase tracking-wide ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
-                    <h3 className="text-[14px] font-bold text-neutral-900 mt-0.5">Order #{order.id.slice(-4)}</h3>
+                    <span className={`text-[12px] font-bold uppercase tracking-wide ${tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-[#FF5A09]'}`}>
+                      {tableId.toLowerCase() === 'takeaway' ? 'Takeaway Hub' : `Table ${tableId}`}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">{tableOrders.length} {tableOrders.length === 1 ? 'Order' : 'Orders'} Ready</span>
                   </div>
-                  <span className={`px-2 py-0.5 border rounded text-[9px] font-bold tracking-wide uppercase ${
-                    order.status === 'ready' ? 'bg-indigo-50 text-indigo-650 border-indigo-100' : 'bg-emerald-55 text-emerald-700 border-emerald-100'
-                  }`}>
-                    {order.status === 'ready' ? 'Hot Deck' : 'Runner'}
-                  </span>
                 </div>
 
-                <div className="space-y-2 border-t border-[#FAFAFA] pt-3">
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-[12px] text-neutral-600">
-                      <span>{item.quantity}x {item.name}</span>
+                <div className="space-y-4 border-t border-[#FAFAFA] pt-3 divide-y divide-[#FAFAFA]">
+                  {tableOrders.map(order => (
+                    <div key={order.id} className="pt-3 first:pt-0 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-bold text-neutral-500">Order #{order.id.slice(-4)}</span>
+                        <span className={`px-2 py-0.5 border rounded text-[9px] font-bold tracking-wide uppercase ${
+                          order.status === 'ready' ? 'bg-indigo-50 text-indigo-650 border-indigo-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                        }`}>
+                          {order.status === 'ready' ? 'Hot Deck' : 'Runner'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-[12px] text-neutral-600">
+                            <span>{item.quantity}x {item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {order.runnerId && (
+                        <div className="bg-[#FAFAFA] border border-[#ECECEC] p-2.5 rounded-xl flex items-center justify-between text-[10px] text-neutral-500">
+                          <span>Runner: <b>{order.runnerId}</b></span>
+                          <span className="font-semibold text-neutral-700">{order.runnerRoute.join(' → ')}</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
-
-                {order.runnerId && (
-                  <div className="bg-[#FAFAFA] border border-[#ECECEC] p-3 rounded-xl flex items-center justify-between text-[10px] text-neutral-500">
-                    <span>Runner: <b>{order.runnerId}</b></span>
-                    <span className="font-semibold text-neutral-700">{order.runnerRoute.join(' → ')}</span>
-                  </div>
-                )}
               </motion.div>
             ))}
             {readyOrders.length === 0 && (
@@ -481,26 +550,38 @@ export default function KitchenStudio() {
           </div>
 
           <div className="space-y-4">
-            {deliveredOrders.slice(0, 4).map(order => (
+            {getGroupedTables(deliveredOrders).map(([tableId, tableOrders]) => (
               <motion.div
-                key={order.id}
+                key={tableId}
                 layout
-                className="bg-white border border-[#ECECEC] p-4.5 rounded-[20px] shadow-sm space-y-3 opacity-60"
+                className="bg-white border border-[#ECECEC] p-5 rounded-[20px] shadow-sm space-y-4 opacity-75"
               >
-                <div className="flex justify-between items-center text-[12px]">
+                <div className="flex justify-between items-start">
                   <div>
-                    <span className={`text-[10px] font-bold uppercase ${order.tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>{order.tableId.toLowerCase() === 'takeaway' ? 'Takeaway Order' : `Table ${order.tableId}`}</span>
-                    <h4 className="font-bold text-neutral-900">Order #{order.id.slice(-4)}</h4>
+                    <span className={`text-[12px] font-bold uppercase tracking-wide ${tableId.toLowerCase() === 'takeaway' ? 'text-rose-500' : 'text-neutral-400'}`}>
+                      {tableId.toLowerCase() === 'takeaway' ? 'Takeaway Hub' : `Table ${tableId}`}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 block mt-0.5">{tableOrders.length} {tableOrders.length === 1 ? 'Order' : 'Orders'} Served</span>
                   </div>
-                  <span className="text-[10px] text-neutral-400">
-                    {new Date(order.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
                 </div>
 
-                <div className="space-y-1 text-[12px] text-neutral-500 border-t border-[#FAFAFA] pt-2">
-                  {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between">
-                      <span>{item.quantity}x {item.name}</span>
+                <div className="space-y-4 border-t border-[#FAFAFA] pt-3 divide-y divide-[#FAFAFA]">
+                  {tableOrders.slice(0, 4).map(order => (
+                    <div key={order.id} className="pt-3 first:pt-0 space-y-2">
+                      <div className="flex justify-between items-center text-[12px]">
+                        <span className="font-bold text-neutral-900">Order #{order.id.slice(-4)}</span>
+                        <span className="text-[10px] text-neutral-400">
+                          {new Date(order.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 text-[12px] text-neutral-500">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between">
+                            <span>{item.quantity}x {item.name}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>

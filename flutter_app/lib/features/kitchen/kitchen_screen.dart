@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,11 +20,16 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
   List<Map<String, dynamic>> _orders = [];
   bool _loading = true;
 
+  Timer? _refreshTimer;
+
   @override
   void initState() {
     super.initState();
     _fetchOrders();
     _subscribeToOrders();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _fetchOrders();
+    });
   }
 
   Future<void> _fetchOrders() async {
@@ -180,6 +186,18 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
     required String actionLabel,
     required Function(String) onAction,
   }) {
+    // Group orders by table ID
+    final Map<String, List<Map<String, dynamic>>> groups = {};
+    for (final order in items) {
+      final tid = order['table_id']?.toString() ?? 'Takeaway';
+      if (!groups.containsKey(tid)) {
+        groups[tid] = [];
+      }
+      groups[tid]!.add(order);
+    }
+    
+    final groupList = groups.entries.toList();
+
     return Column(
       children: [
         Container(
@@ -193,14 +211,16 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
           ),
         ),
         Expanded(
-          child: items.isEmpty
+          child: groupList.isEmpty
               ? const Center(child: Text('LANE VACANT', style: TextStyle(fontSize: 10, color: Colors.grey)))
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
-                  itemCount: items.length,
+                  itemCount: groupList.length,
                   itemBuilder: (context, idx) {
-                    final order = items[idx];
-                    final List itemsList = order['items'] ?? [];
+                    final entry = groupList[idx];
+                    final tableId = entry.key;
+                    final tableOrders = entry.value;
+
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: AurynCard(
@@ -212,47 +232,64 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'TABLE ${order['table_id']}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                  tableId == 'Takeaway' ? 'Takeaway Hub' : 'TABLE $tableId',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
                                 ),
                                 Text(
-                                  'ID: ${order['id'].toString().split('-').last}',
+                                  '${tableOrders.length} ${tableOrders.length == 1 ? 'order' : 'orders'}',
                                   style: const TextStyle(fontSize: 9, color: Colors.grey),
                                 ),
                               ],
                             ),
-                            const Divider(height: 16),
-                            ...itemsList.map((item) => Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '${item['quantity']}x ${item['name']}',
-                                        style: const TextStyle(fontSize: 12),
+                            const Divider(height: 16, color: Colors.white10),
+                            ...tableOrders.map((order) {
+                              final List itemsList = order['items'] ?? [];
+                              final orderId = order['id'];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Order #${orderId.toString().substring(orderId.toString().length - 4)}',
+                                      style: const TextStyle(fontSize: 10, color: Colors.amber, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    ...itemsList.map((item) => Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                '${item['quantity']}x ${item['name']}',
+                                                style: const TextStyle(fontSize: 12, color: Colors.white70),
+                                              ),
+                                              Text(
+                                                item['status'] ?? 'placed',
+                                                style: const TextStyle(fontSize: 9, color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                        )),
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () => onAction(orderId),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white10,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        ),
+                                        child: Text(
+                                          actionLabel,
+                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                                        ),
                                       ),
-                                      Text(
-                                        item['status'] ?? 'placed',
-                                        style: const TextStyle(fontSize: 9, color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                )),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () => onAction(order['id']),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white10,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  ],
                                 ),
-                                child: Text(
-                                  actionLabel,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
-                                ),
-                              ),
-                            ),
+                              );
+                            }).toList(),
                           ],
                         ),
                       ),
@@ -262,5 +299,11 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 }

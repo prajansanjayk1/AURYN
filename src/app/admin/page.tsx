@@ -43,14 +43,14 @@ export default function ExecutiveCenter() {
   
   const [loading, setLoading] = useState(true);
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null);
-  const [activeTab, setActiveTab] = useState<'twin' | 'tables' | 'menu' | 'inventory' | 'staff' | 'ai_manager' | 'saas_hub' | 'customization'>('twin');
+  const [activeTab, setActiveTab] = useState<'twin' | 'tables' | 'menu' | 'inventory' | 'staff' | 'saas_hub' | 'customization'>('twin');
   const [origin, setOrigin] = useState('');
 
   const [managerQuery, setManagerQuery] = useState('');
   const [managerConversation, setManagerConversation] = useState<Array<{ sender: 'manager' | 'ai'; text: string }>>([
     {
       sender: 'ai',
-      text: 'Good afternoon. I am your AURYN AI Business Intelligence Manager. Ask me about delays, revenue metrics, best-selling dishes, inventory stock-outs, or tomorrow\'s demand predictions.'
+      text: 'Good afternoon. I am your Kings of Wings AI Business Intelligence Manager. Ask me about delays, revenue metrics, best-selling dishes, inventory stock-outs, or tomorrow\'s demand predictions.'
     }
   ]);
 
@@ -63,13 +63,13 @@ export default function ExecutiveCenter() {
 
   // Customization state
   const [settings, setSettings] = useState<any>({
-    restaurantName: 'AURYN',
-    primaryColor: '#0A0A0A',
-    accentColor: '#D4AF37',
+    restaurantName: 'Kings of Wings',
+    primaryColor: '#0B0C10',
+    accentColor: '#FF5A09',
     typography: 'Outfit',
-    welcomeScreen: { title: 'Welcome to AURYN', subtitle: 'Luxury Dining Intelligence' },
-    splashScreen: { duration: 3000, text: 'AURYN — Orchestrated Elegance' },
-    backgroundMusic: 'classical_jazz',
+    welcomeScreen: { title: 'Kings of Wings', subtitle: 'The Sovereign of Sizzle & Sauces' },
+    splashScreen: { duration: 3000, text: 'Kings of Wings — Bold Flavors, Untamed Heat' },
+    backgroundMusic: 'rock_blues',
     notificationSounds: true,
     receiptLayout: 'classic_luxury',
     qrCodeStyle: 'rounded_gold',
@@ -157,6 +157,12 @@ export default function ExecutiveCenter() {
     fetchSettings();
     fetchInitialData();
 
+    // 2-second auto-refresh interval
+    const refreshInterval = setInterval(() => {
+      fetchSettings();
+      fetchInitialData();
+    }, 2000);
+
     // Subscribe to Supabase Realtime channel
     const channel = supabase.channel('admin-telemetry-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
@@ -193,6 +199,7 @@ export default function ExecutiveCenter() {
       .subscribe();
 
     return () => {
+      clearInterval(refreshInterval);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -443,7 +450,7 @@ export default function ExecutiveCenter() {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center p-6 text-white">
         <Sparkles className="w-8 h-8 text-amber-500 animate-spin mb-4" />
-        <span className="text-[12px] tracking-[0.2em] font-semibold text-neutral-400 uppercase">Loading AURYN Executive Center...</span>
+        <span className="text-[12px] tracking-[0.2em] font-semibold text-neutral-400 uppercase">Loading Kings of Wings Executive Center...</span>
       </div>
     );
   }
@@ -474,7 +481,7 @@ export default function ExecutiveCenter() {
             <Sparkles className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-[16px] font-bold uppercase tracking-wider text-neutral-955">{settings.restaurantName || 'AURYN'}</h1>
+            <h1 className="text-[16px] font-bold uppercase tracking-wider text-neutral-955">{settings.restaurantName || 'Kings of Wings'}</h1>
             <span className="text-[10px] text-neutral-400 font-semibold tracking-widest block uppercase">Executive Platform</span>
           </div>
         </div>
@@ -487,7 +494,6 @@ export default function ExecutiveCenter() {
             { id: 'menu', label: 'Menu Editor' },
             { id: 'inventory', label: 'Inventory' },
             { id: 'staff', label: 'Staff & Roles' },
-            { id: 'ai_manager', label: 'AI Manager' },
             { id: 'saas_hub', label: 'SaaS Hub' },
             { id: 'customization', label: 'Branding' }
           ].map(tab => (
@@ -529,7 +535,7 @@ export default function ExecutiveCenter() {
           
           {/* Executive Health Score Card */}
           <div className="bg-white border border-[#ECECEC] rounded-[24px] p-6 shadow-luxury">
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">AURYN Platform Health</span>
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">Kings of Wings Platform Health</span>
             <div className="flex justify-between items-end">
               <div>
                 <h3 className="text-4xl font-light text-neutral-950 tracking-tight leading-none">{aiInsights.healthScore}</h3>
@@ -566,11 +572,11 @@ export default function ExecutiveCenter() {
             </div>
           </div>
 
-          {/* AI Insights Card */}
+          {/* Telemetry Insights Card */}
           <div className="bg-white border border-[#ECECEC] rounded-[24px] p-6 shadow-luxury space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-[#ECECEC]">
               <Sparkles className="w-4 h-4 text-amber-500" />
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-900">AURYN Specialized AI Insights</h3>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-900">Operations Telemetry & Diagnostics</h3>
             </div>
             
             <div className="space-y-4">
@@ -1493,11 +1499,11 @@ export default function ExecutiveCenter() {
             </div>
           )}
 
-          {/* AI MANAGER COMMAND TAB */}
-          {activeTab === 'ai_manager' && (
+          {/* AI MANAGER COMMAND TAB - DISABLED */}
+          {false && activeTab === ('ai_manager' as any) && (
             <div className="bg-white border border-[#ECECEC] rounded-[24px] p-6 shadow-luxury space-y-6">
               <div>
-                <h3 className="text-[15px] font-bold tracking-tight uppercase">AURYN AI Manager Command</h3>
+                <h3 className="text-[15px] font-bold tracking-tight uppercase">Kings of Wings AI Manager Command</h3>
                 <p className="text-[12px] text-neutral-550 font-light mt-0.5">
                   Natural language operations assistant powered by live restaurant database telemetry.
                 </p>
@@ -1509,7 +1515,7 @@ export default function ExecutiveCenter() {
                   {managerConversation.map((msg, idx) => (
                     <div key={idx} className={`flex flex-col ${msg.sender === 'manager' ? 'items-end' : 'items-start'}`}>
                       <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider mb-1 px-1">
-                        {msg.sender === 'manager' ? 'Manager Command' : 'AURYN AI Intelligence'}
+                        {msg.sender === 'manager' ? 'Manager Command' : 'Kings of Wings AI Intelligence'}
                       </span>
                       <div className={`p-4 rounded-2xl max-w-[85%] text-[12px] leading-relaxed font-light ${
                         msg.sender === 'manager' 

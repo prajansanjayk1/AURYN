@@ -58,25 +58,25 @@ export class KnowledgeGraph {
     });
 
     // 3. Add cuisine node
-    this.addNode({ id: 'cuisine_gourmet', type: 'Cuisine', label: 'Gourmet Fusion' });
+    this.addNode({ id: 'cuisine_wings', type: 'Cuisine', label: 'Gourmet Wings' });
 
     // 4. Add core ingredients nodes
     const ingredients = [
-      { id: 'ing_wagyu', label: 'A5 Wagyu Beef', vegan: false, veg: false },
-      { id: 'ing_brioche', label: 'Brioche Buns', vegan: false, veg: true },
-      { id: 'ing_truffle', label: 'Black Truffle', vegan: true, veg: true },
-      { id: 'ing_gruyere', label: 'Gruyère Cheese', vegan: false, veg: true, dairy: true },
-      { id: 'ing_burrata', label: 'Burrata Cheese', vegan: false, veg: true, dairy: true },
-      { id: 'ing_sourdough', label: 'Sourdough', vegan: true, veg: true, gluten: true },
-      { id: 'ing_lobster', label: 'Maine Lobster', vegan: false, veg: false, shellfish: true },
-      { id: 'ing_saffron', label: 'Kashmiri Saffron', vegan: true, veg: true },
-      { id: 'ing_rice', label: 'Acquerello Rice', vegan: true, veg: true },
+      { id: 'ing_chicken_wings', label: 'Chicken Wings', vegan: false, veg: false },
+      { id: 'ing_buffalo', label: 'Buffalo Sauce', vegan: false, veg: true },
+      { id: 'ing_potatoes', label: 'Potatoes', vegan: true, veg: true },
+      { id: 'ing_truffle', label: 'Truffle Oil', vegan: true, veg: true },
       { id: 'ing_parmigiano', label: 'Parmigiano-Reggiano', vegan: false, veg: true, dairy: true },
-      { id: 'ing_matcha', label: 'Uji Matcha', vegan: true, veg: true },
-      { id: 'ing_almond', label: 'Almonds', vegan: true, veg: true, nuts: true },
-      { id: 'ing_pistachio', label: 'Iranian Pistachios', vegan: true, veg: true, nuts: true },
-      { id: 'ing_peach', label: 'Organic Peaches', vegan: true, veg: true },
-      { id: 'ing_thyme', label: 'Himalayan Thyme', vegan: true, veg: true }
+      { id: 'ing_mozzarella', label: 'Mozzarella Cheese', vegan: false, veg: true, dairy: true },
+      { id: 'ing_breadcrumbs', label: 'Breadcrumbs', vegan: true, veg: true, gluten: true },
+      { id: 'ing_brioche', label: 'Brioche Buns', vegan: false, veg: true, gluten: true, dairy: true },
+      { id: 'ing_chocolate', label: 'Milk Chocolate', vegan: false, veg: true, dairy: true },
+      { id: 'ing_marshmallows', label: 'Marshmallows', vegan: false, veg: false },
+      { id: 'ing_blueberries', label: 'Blueberries', vegan: true, veg: true },
+      { id: 'ing_lemon', label: 'Lemon Juice', vegan: true, veg: true },
+      { id: 'ing_mangoes', label: 'Alphonso Mangoes', vegan: true, veg: true },
+      { id: 'ing_habanero', label: 'Habanero Peppers', vegan: true, veg: true },
+      { id: 'ing_butter', label: 'Butter', vegan: false, veg: true, dairy: true }
     ];
 
     ingredients.forEach(ing => {
@@ -104,11 +104,17 @@ export class KnowledgeGraph {
 
     // 5. Seed standard menu items
     const menuItemsList = [
-      { id: 'm1', name: 'Wagyu Beef Sliders', cat: 'starters', ings: ['ing_wagyu', 'ing_brioche', 'ing_truffle', 'ing_gruyere'], price: 950, rec: true, pop: true, tags: ['savory', 'premium'] },
-      { id: 'm2', name: 'Truffle Burrata Pizza', cat: 'mains', ings: ['ing_burrata', 'ing_sourdough', 'ing_truffle'], price: 1200, rec: false, pop: true, tags: ['savory', 'popular'] },
-      { id: 'm3', name: 'Saffron Lobster Risotto', cat: 'mains', ings: ['ing_lobster', 'ing_rice', 'ing_saffron', 'ing_parmigiano'], price: 1850, rec: true, pop: false, tags: ['premium'] },
-      { id: 'm4', name: 'Matcha Pistachio Opera Cake', cat: 'desserts', ings: ['ing_matcha', 'ing_almond', 'ing_pistachio', 'ing_gruyere'], price: 650, rec: false, pop: true, tags: ['sweet', 'nuts'] },
-      { id: 'm5', name: 'Peach Thyme Sparkler', cat: 'beverages', ings: ['ing_peach', 'ing_thyme'], price: 350, rec: false, pop: false, tags: ['refreshing', 'cold', 'vegan'] }
+      { id: 'm1', name: 'Classic Buffalo Wings', cat: 'starters', ings: ['ing_chicken_wings', 'ing_buffalo', 'ing_butter'], price: 480, rec: false, pop: true, tags: ['savory', 'spicy'] },
+      { id: 'm2', name: 'Truffle Parm Fries', cat: 'starters', ings: ['ing_potatoes', 'ing_truffle', 'ing_parmigiano'], price: 420, rec: false, pop: true, tags: ['savory', 'premium'] },
+      { id: 'm3', name: 'Mozzarella Staves', cat: 'starters', ings: ['ing_mozzarella', 'ing_breadcrumbs'], price: 390, rec: false, pop: false, tags: ['savory', 'cheesy'] },
+      { id: 'm4', name: 'The Monarch Platter', cat: 'mains', ings: ['ing_chicken_wings', 'ing_buffalo', 'ing_potatoes'], price: 1250, rec: true, pop: true, tags: ['savory', 'spicy', 'platter'] },
+      { id: 'm5', name: 'Lemon Pepper Wet Wings', cat: 'mains', ings: ['ing_chicken_wings', 'ing_butter'], price: 780, rec: false, pop: false, tags: ['savory', 'citrus'] },
+      { id: 'm6', name: 'Mango Habanero Wings', cat: 'mains', ings: ['ing_chicken_wings', 'ing_mangoes', 'ing_habanero'], price: 790, rec: true, pop: true, tags: ['spicy', 'sweet'] },
+      { id: 'm7', name: 'Nashville Hot Sliders', cat: 'mains', ings: ['ing_chicken_wings', 'ing_brioche'], price: 680, rec: false, pop: true, tags: ['savory', 'spicy'] },
+      { id: 'm8', name: 'Campfire S\'mores Skillet', cat: 'desserts', ings: ['ing_chocolate', 'ing_marshmallows'], price: 380, rec: true, pop: true, tags: ['sweet'] },
+      { id: 'm9', name: 'Churros with Spiced Chocolate', cat: 'desserts', ings: ['ing_chocolate'], price: 340, rec: false, pop: false, tags: ['sweet'] },
+      { id: 'm10', name: 'Blueberry Basil Lemonade', cat: 'beverages', ings: ['ing_blueberries', 'ing_lemon'], price: 260, rec: false, pop: false, tags: ['refreshing', 'cold', 'vegan'] },
+      { id: 'm11', name: 'Spiced Mango Mojito', cat: 'beverages', ings: ['ing_mangoes', 'ing_lemon'], price: 290, rec: true, pop: true, tags: ['refreshing', 'cold', 'spicy'] }
     ];
 
     menuItemsList.forEach(item => {
@@ -123,7 +129,7 @@ export class KnowledgeGraph {
       this.addEdge({ from: `food_${item.id}`, to: `cat_${item.cat}`, type: 'belongsTo' });
       
       // Link to Cuisine
-      this.addEdge({ from: `food_${item.id}`, to: 'cuisine_gourmet', type: 'belongsTo' });
+      this.addEdge({ from: `food_${item.id}`, to: 'cuisine_wings', type: 'belongsTo' });
 
       // Link to ingredients
       item.ings.forEach(ingId => {
@@ -132,10 +138,11 @@ export class KnowledgeGraph {
     });
 
     // 6. Cross-recommendation relationships
-    this.addEdge({ from: 'food_m1', to: 'food_m5', type: 'recommendedWith', weight: 0.8 }); // Sliders + Sparkler
-    this.addEdge({ from: 'food_m2', to: 'food_m5', type: 'recommendedWith', weight: 0.9 }); // Pizza + Sparkler
-    this.addEdge({ from: 'food_m3', to: 'food_m5', type: 'recommendedWith', weight: 0.75 }); // Risotto + Sparkler
-    this.addEdge({ from: 'food_m2', to: 'food_m4', type: 'recommendedWith', weight: 0.6 }); // Pizza + Dessert
+    this.addEdge({ from: 'food_m1', to: 'food_m10', type: 'recommendedWith', weight: 0.9 }); // Wings + Lemonade
+    this.addEdge({ from: 'food_m4', to: 'food_m10', type: 'recommendedWith', weight: 0.95 }); // Platter + Lemonade
+    this.addEdge({ from: 'food_m6', to: 'food_m11', type: 'recommendedWith', weight: 0.85 }); // Mango Habanero + Mango Mojito
+    this.addEdge({ from: 'food_m7', to: 'food_m2', type: 'recommendedWith', weight: 0.8 }); // Sliders + Fries
+    this.addEdge({ from: 'food_m4', to: 'food_m8', type: 'recommendedWith', weight: 0.7 }); // Platter + S'mores Skillet
   }
 
   /**
